@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Das Haus auf dem Hügel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,800;1,9..144,500&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--ink:#14101f;--gold:#f3cf6b;--cream:#fff7ee;--text:#f6f2ff;--muted:#b9b0d0;--ok:#7fe0b0;--line:#5a4a80}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--text);font-family:Nunito,system-ui,sans-serif;overflow:hidden}
+svg#scene{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+.hs{cursor:pointer;transition:filter .25s}
+.hs:hover{filter:drop-shadow(0 0 6px #fff6c8) drop-shadow(0 0 14px #f3cf6b)}
+.tw{animation:tw 2.4s ease-in-out infinite alternate}@keyframes tw{from{opacity:.25}to{opacity:1}}
+.flame{animation:flick .16s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes flick{from{transform:scale(.9,1)}to{transform:scale(1.07,1.15)}}
+.ghost{animation:gh 5s ease-in-out infinite alternate}@keyframes gh{0%{transform:translate(-70px,0)}50%{transform:translate(0,-18px)}100%{transform:translate(70px,6px)}}
+.glow{animation:tw 1.6s ease-in-out infinite alternate}
+#top{position:fixed;top:10px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;z-index:5}
+#roomName{font-family:Fraunces,serif;font-weight:800;font-size:24px;color:var(--cream);text-shadow:0 2px 10px #000a}
+#meters{display:flex;gap:6px}
+.meter{background:rgba(20,16,31,.75);border:1px solid var(--line);border-radius:10px;padding:3px 9px;min-width:62px;text-align:right}
+.meter .k{font-size:10.5px;color:var(--muted)}
+.meter .v{font-size:19px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+#phoneTag{position:fixed;top:48px;left:14px;z-index:5;font-size:12px;background:rgba(20,16,31,.75);border:1px solid var(--line);border-radius:20px;padding:3px 9px;display:none}
+#legend{position:fixed;left:50%;transform:translateX(-50%);bottom:180px;z-index:5;width:min(920px,94vw);background:rgba(20,16,31,.72);border:1px solid var(--line);border-radius:10px;padding:5px 14px;font-size:13px;text-align:center}
+#legend b{color:var(--gold)}
+#box{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;width:min(920px,94vw);min-height:152px;z-index:6;background:rgba(24,18,40,.95);border:2px solid #6a55a8;border-radius:18px;padding:14px 20px 12px;box-shadow:0 12px 40px #0009}
+#boxTitle{font-weight:800;color:var(--gold);font-size:15px;margin-bottom:3px;min-height:20px}
+#boxText{font-size:20px;line-height:1.45}
+#boxUi{margin-top:9px}
+.bar{height:16px;border-radius:8px;background:#352a55;overflow:hidden;position:relative}
+.bar>i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#8a6cf0,#e46aa0,#f3cf6b);width:0}
+.barlbl{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:4px;gap:10px}
+.digits{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dg{width:50px;height:58px;border:2px solid #6a55a8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;background:#241a3e}
+.dg.cur{border-color:var(--gold)}.dg.ok{border-color:var(--ok);color:#b9f5d6}
+.pad{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pad button{padding:8px 0;width:40px;font-size:18px}
+.choices{display:flex;gap:12px}
+.choice{flex:1;border:2px solid #6a55a8;border-radius:12px;padding:10px;text-align:center;font-size:17px;cursor:pointer}
+.choice:hover{border-color:var(--gold)}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:rgba(12,9,22,.86)}
+.card{width:min(680px,94vw);max-height:94vh;overflow:auto;background:#221a3a;border:2px solid #6a55a8;border-radius:20px;padding:24px 28px}
+.card h1{font-family:Fraunces,serif;font-weight:800;font-size:40px;line-height:1.05;margin:0 0 6px;color:var(--cream)}
+.card p{font-size:16px;line-height:1.5;color:#e2daf4;margin:8px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+button{font:800 16px Nunito,sans-serif;border:0;border-radius:12px;padding:10px 16px;background:#45377a;color:var(--text);cursor:pointer}
+button:hover{filter:brightness(1.15)}
+button.go{background:linear-gradient(90deg,#e46aa0,#8a6cf0);font-size:18px}
+input[type=number],input[type=text]{font:700 16px Nunito,sans-serif;padding:7px 9px;border-radius:8px;border:1px solid #6a55a8;background:#14101f;color:var(--text)}
+input[type=number]{width:90px}
+.small{font-size:14px;color:var(--muted)}
+#qrBox{display:flex;gap:16px;align-items:center;margin-top:8px}
+#qr{background:#fff;padding:8px;border-radius:10px;width:132px;height:132px}
+#qr img,#qr canvas{width:116px!important;height:116px!important}
+.code{font:800 30px Nunito;letter-spacing:5px;color:var(--gold)}
+#sim{position:fixed;right:14px;top:58px;z-index:5;background:rgba(20,16,31,.88);border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-size:13.5px;width:270px}
+#sim h3{margin:0 0 6px;font-size:14px;color:var(--gold)}
+#sim label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:4px 0}
+#sim input[type=range]{width:120px}
+#sim input[type=number]{width:70px;padding:4px 6px;font-size:14px}
+#sim .keys{color:var(--muted);font-size:12px;line-height:1.5;margin-top:6px}
+#skipBtn{position:fixed;z-index:7;right:calc(50% - min(460px,47vw));bottom:218px;background:#e46aa0;font-size:14px;padding:7px 12px;display:none}
+#flashMsg{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:7;font-family:Fraunces,serif;font-weight:800;font-size:34px;color:var(--cream);text-shadow:0 0 18px #e46aa0;pointer-events:none;opacity:0;transition:opacity .4s;white-space:nowrap}
+#doc{position:fixed;inset:0;z-index:15;display:none;align-items:center;justify-content:center;background:rgba(8,6,14,.7);cursor:pointer}
+#docPaper{width:min(760px,90vw);background:#efe2c2;color:#3a2614;border-radius:6px;padding:36px 46px 26px;box-shadow:0 20px 60px #000c;font-family:Fraunces,serif;transform:rotate(-1deg);border:1px solid #c9b48a}
+#docPaper h2{margin:0 0 14px;font-size:38px;text-align:center;font-weight:800}
+#docPaper p{font-size:24px;line-height:1.5;margin:10px 0;font-style:italic}
+#docPaper .sig{text-align:right;margin-top:18px}
+#docBar{height:8px;border-radius:4px;background:#d6c49c;margin-top:14px;overflow:hidden}#docBar i{display:block;height:100%;width:0;background:#8a5a2a}
+#fw{position:fixed;inset:0;pointer-events:none;z-index:30}
+#docPaper.wet{background:radial-gradient(ellipse at 28% 38%,rgba(96,110,135,.38),transparent 42%),radial-gradient(ellipse at 74% 72%,rgba(90,102,128,.42),transparent 48%),radial-gradient(circle at 62% 22%,rgba(120,130,150,.3),transparent 26%),radial-gradient(ellipse at 15% 85%,rgba(150,140,110,.35),transparent 35%),#d6d1c0;color:#26324e;transform:rotate(1.6deg);border-color:#9e9886}
+#docPaper.wet .dear{font-style:italic;font-size:42px;margin:0 0 18px;opacity:.7;filter:blur(.8px)}
+#docPaper.wet .smear{font-size:22px;line-height:1.6;margin:8px 0;opacity:.42;filter:blur(5.5px)}
+#docPaper.band{background:radial-gradient(circle at 50% 40%,#3a2a5a,#1c1530);color:#fff7ee;transform:none;border:2px solid #6a55a8;text-align:center;font-family:Nunito,sans-serif;padding:24px 20px 18px}
+#docPaper.band h2{font-family:Fraunces,serif;font-size:30px;margin:0 0 6px}
+.wobble{animation:wob .12s linear infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes wob{from{transform:rotate(-1.2deg) translateX(-3px)}to{transform:rotate(1.2deg) translateX(3px)}}
+.falling{animation:fall 1.6s cubic-bezier(.3,0,.6,1) forwards}
+@keyframes fall{0%{transform:translate(0,-40px) rotate(0)}55%{transform:translate(-90px,140px) rotate(-60deg)}80%{transform:translate(-160px,232px) rotate(-88deg)}90%{transform:translate(-165px,218px) rotate(-90deg)}100%{transform:translate(-170px,232px) rotate(-90deg)}}
+#close,#giftOv{position:fixed;inset:0;z-index:15;display:none;align-items:center;justify-content:center;background:rgba(8,6,14,.78);cursor:pointer}
+#closeWrap{display:flex;align-items:center;gap:10px;width:min(1000px,94vw)}
+#closeWrap svg{width:min(380px,40vw);flex:0 0 auto}
+#bubble{position:relative;background:#fff7ee;color:#2a1a10;border-radius:28px;padding:26px 30px;font-family:Fraunces,serif;font-size:26px;line-height:1.45;box-shadow:0 14px 40px #000a}
+#bubble:before{content:'';position:absolute;left:-26px;top:46%;border:16px solid transparent;border-right:26px solid #fff7ee;border-left:0}
+#closeBar{height:8px;border-radius:4px;background:#e2d4b8;margin-top:14px;overflow:hidden}#closeBar i{display:block;height:100%;width:0;background:#8a5a2a}
+.giftBig{font-size:150px;line-height:1;animation:bob2 1s ease-in-out infinite alternate;cursor:pointer;background:none}
+@keyframes bob2{from{transform:translateY(0) rotate(-4deg)}to{transform:translateY(-14px) rotate(4deg)}}
+.voucher{background:linear-gradient(135deg,#fff3c8,#f6c6d8);color:#3a1a20;border:4px dashed #b8402a;border-radius:20px;padding:26px 30px;text-align:center;font-family:Fraunces,serif;font-size:30px;line-height:1.3;display:flex;flex-direction:column;gap:6px;max-width:620px}
+.voucher b{font-size:46px;display:block}
+.giftBtn{display:block;margin:20px auto;font-size:110px;background:none;border:0;animation:bob2 1s ease-in-out infinite alternate}
+#nails{position:fixed;left:0;right:0;top:0;bottom:215px;z-index:4;display:none;background:radial-gradient(circle at 50% 55%,rgba(60,30,60,.82),rgba(8,6,14,.92));pointer-events:none}
+#speedBox{position:fixed;left:14px;top:48px;z-index:6;background:rgba(20,16,31,.8);border:1px solid var(--line);border-radius:10px;padding:4px 6px;font-size:12px;color:var(--muted);display:flex;gap:4px;align-items:center}
+#speedBox button{padding:3px 8px;font-size:13px;border-radius:7px}
+#speedBox button.on{background:#e46aa0}
+#phoneTag{top:84px}
+#intro{position:fixed;inset:0;z-index:18;display:none;background:radial-gradient(ellipse at 50% 30%,#1e1c38,#07060e 75%);cursor:pointer;overflow:hidden}
+#intro svg{position:absolute;inset:0;width:100%;height:100%}
+#introFlash{position:absolute;inset:0;background:#eef0ff;opacity:0;pointer-events:none}
+#introTitle{position:absolute;left:0;right:0;top:40%;transform:translateY(-50%);margin:0;text-align:center;font-family:Fraunces,serif;font-weight:800;font-size:min(9vw,104px);line-height:1.05;color:var(--cream);text-shadow:0 0 30px #8a6cf0,0 4px 20px #000;opacity:0;transition:opacity 2.2s}
+#introHint{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-size:15px;color:var(--muted);opacity:0;transition:opacity 1s}
+.cloud{animation:drift 26s ease-in-out infinite alternate}@keyframes drift{from{transform:translateX(-40px)}to{transform:translateX(40px)}}
+.steam{animation:steam 2.6s ease-in infinite;transform-box:fill-box}#sortOv{position:fixed;inset:0;z-index:15;display:none;align-items:center;justify-content:center;background:rgba(8,6,14,.8)}
+#sortCard{width:min(1040px,95vw);max-height:94vh;overflow:auto;background:#221a3a;border:2px solid #6a55a8;border-radius:20px;padding:18px 22px;text-align:center}
+#sortCard h2{font-family:Fraunces,serif;font-weight:800;font-size:30px;margin:0 0 2px;color:var(--cream)}
+#sortShelf{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;margin:14px 0 6px;padding:8px;background:#4a3428;border-radius:10px;border-bottom:8px solid #2a1d16}
+.slot{aspect-ratio:1;border-radius:5px;border:2px dashed #7a5a40;display:flex;align-items:center;justify-content:center;font:800 10.5px Nunito;line-height:1.1;padding:3px;overflow:hidden}
+#sortMsg{min-height:26px;font-weight:800;color:#ff9aa8;font-size:17px}
+#sortPile{display:flex;flex-wrap:wrap;gap:16px 22px;justify-content:center;margin-top:8px}
+.rec{position:relative;width:124px;height:124px;border-radius:6px;padding:8px;display:flex;align-items:flex-end;justify-content:center;font:800 15px/1.15 Fraunces,serif;box-shadow:0 6px 16px #0008;cursor:pointer}
+.rec .disc{position:absolute;right:-16px;top:12px;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,var(--c) 0 17%,#111 18% 22%,#222 23% 40%,#111 41% 60%,#222 61%);z-index:-1}
+.rec:hover{transform:translateY(-4px)}
+@keyframes steam{0%{transform:translateY(0);opacity:0}30%{opacity:.75}100%{transform:translateY(-26px);opacity:0}}
+@media (max-width:900px){#legend,#sim{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+body.ctl{overflow:auto;background:radial-gradient(circle at 30% 0%,#3a2a60,#14101f 70%)}
+body.ctl #game{display:none}
+#ctl{display:none;max-width:520px;margin:0 auto;padding:18px 16px 40px}
+body.ctl #ctl{display:block}
+#ctl h1{font-family:Fraunces,serif;font-weight:800;font-size:26px;margin:0}
+#ctlState{color:var(--muted);font-size:14px;margin:4px 0 14px}
+#ctlTitle{font-weight:800;color:var(--gold);font-size:16px}
+#ctlText{font-size:18px;line-height:1.45;margin:6px 0 14px}
+.cbtn{display:block;width:100%;text-align:left;font-size:20px;padding:16px 18px;margin:0 0 10px;border-radius:16px;background:#3a2d66;border:2px solid #6a55a8}
+.cbtn:disabled{opacity:.4}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keypad button{font-size:28px;padding:18px 0;border-radius:16px;background:#3a2d66}
+#ctlNotes{margin-top:22px;background:rgba(0,0,0,.25);border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.5}
+#ctlNotes b{color:var(--gold)}
+#ctlBar{height:20px;border-radius:10px;background:#352a55;overflow:hidden;margin:8px 0}
+#ctlBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8a6cf0,#e46aa0,#f3cf6b)}
+#secret{display:none;margin:14px 0;padding:14px;border-radius:14px;background:#4a3418;border:2px dashed var(--gold);font-size:17px}
+</style>
+</head>
+<body>
+<div id="game">
+<svg id="scene" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice"></svg>
+<div id="top">
+  <div id="roomName">Das Haus auf dem Hügel</div>
+  <div id="meters">
+    <div class="meter"><div class="k">Watt</div><div class="v" id="mW">0</div></div>
+    <div class="meter"><div class="k">Puls</div><div class="v" id="mH">–</div></div>
+    <div class="meter"><div class="k">Zeit</div><div class="v" id="mT">0:00</div></div>
+  </div>
+</div>
+<div id="phoneTag">📱 Handy verbunden</div>
+<div id="legend"></div>
+<div id="sim">
+  <h3>Simulation (ohne Trainer)</h3>
+  <label>Watt <input type="range" id="sW" min="0" max="400" value="0"> <input type="number" id="sWn" min="0" max="600" value="0"></label>
+  <div class="row" style="margin-top:4px"><button id="bEasy">Basis</button><button id="bStop">Stopp</button></div>
+  <div class="keys">↑ ↓ Watt ±10 · L = Basis · S = Stopp<br>N = aktuelle Aufgabe überspringen<br>Gegenstände per Mausklick oder Handy wählen.</div>
+</div>
+<div id="flashMsg"></div>
+<button id="skipBtn">⏭ Überspringen (N)</button>
+<div id="box"><div id="boxTitle"></div><div id="boxText"></div><div id="boxUi"></div></div>
+<div id="doc"><div id="docPaper"><div id="docBody"></div><div id="docBar"><i></i></div></div></div>
+<div id="close"><div id="closeWrap"><div id="closeFace"></div><div id="bubble"><div id="bubbleText"></div><div id="closeBar"><i></i></div></div></div></div>
+<div id="nails"></div>
+<div id="giftOv"><div id="giftInner" style="text-align:center"></div></div>
+<div id="speedBox">Testtempo <button data-sp="1" class="on">×1</button><button data-sp="5">×5</button><button data-sp="15">×15</button><button data-sp="30">×30</button></div>
+<canvas id="fw"></canvas>
+<div id="sortOv"><div id="sortCard"><h2>🎶 Die Schallplatten vom Kaminsims</h2><div class="small" style="font-size:16px">Vom ersten bis zum neuesten Album: Tippe die Platten der Reihe nach an – per Klick oder am Handy.</div><div id="sortShelf"></div><div id="sortMsg"></div><div id="sortPile"></div></div></div>
+<div id="intro"><svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+ <g class="cloud" fill="#16142a"><ellipse cx="180" cy="90" rx="260" ry="80"/><ellipse cx="520" cy="60" rx="300" ry="90"/><ellipse cx="900" cy="80" rx="280" ry="85"/><ellipse cx="1150" cy="110" rx="220" ry="70"/></g>
+ <g class="cloud" style="animation-duration:34s;animation-delay:-9s" fill="#1d1a34"><ellipse cx="320" cy="160" rx="240" ry="60"/><ellipse cx="760" cy="150" rx="280" ry="66"/><ellipse cx="1080" cy="180" rx="200" ry="55"/></g>
+ <path d="M0 640 Q300 600 600 620 T1200 610 L1200 700 L0 700Z" fill="#05040a"/>
+ <polyline id="introBolt" points="" fill="none" stroke="#f4f2ff" stroke-width="7" stroke-linejoin="round" opacity="0" style="filter:drop-shadow(0 0 10px #b8b0ff) drop-shadow(0 0 26px #8a6cf0)"/>
+</svg><div id="introFlash"></div><h1 id="introTitle">Das Haus auf dem Hügel</h1><div id="introHint">weiter: klicken oder „Weiter“ am Handy</div></div>
+
+<div class="overlay" id="startOv">
+  <div class="card">
+    <h1>Das Haus auf dem Hügel</h1>
+    <p>Ein verlassenes Haus, ein seltsames Testament und eine Nacht voller Geister. Etwa 20 Minuten, gesteuert mit den Pedalen und dem Handy.</p>
+    <div class="row"><label class="small">Name der Person im Haus:</label><input type="text" id="pname" value="Philipp Beckington" style="width:240px"></div>
+    <div class="row"><button id="bTrainer">Trainer verbinden</button><span class="small" id="trState">Ohne Trainer: Watt selbst eingeben (Simulation).</span></div>
+    <div class="row"><button id="bHR">Pulsgurt verbinden</button><span class="small" id="hrState">optional</span></div>
+    <div class="row">
+      <label class="small"><input type="checkbox" id="manualBase"> Basis selbst festlegen:</label>
+      <input type="number" id="base" value="80" min="40" max="300" step="5"> <span class="small">W (sonst misst das Spiel sie beim Einfahren)</span>
+    </div>
+    <div style="margin-top:14px"><b>Mit dem Handy steuern</b>
+      <div id="qrBox"><div id="qr"></div><div><div class="small">QR-Code scannen oder Seite mit ?ctl=CODE öffnen:</div><div class="code" id="roomCode">····</div><div class="small" id="qrHint"></div></div></div>
+    </div>
+    <div class="row" style="margin-top:18px"><button class="go" id="bStart">Losfahren</button></div>
+  </div>
+</div>
+<div class="overlay" id="endOv" style="display:none"><div class="card" id="endCard"></div></div>
+</div>
+
+<div id="ctl">
+  <h1>👻 Geister-Handy</h1>
+  <div id="ctlState">Verbinde…</div>
+  <div id="ctlBody"></div>
+  <div id="secret"></div>
+  <div id="ctlNotes"><b>Notizbuch</b><div id="ctlNotesList" class="small">Noch keine Hinweise.</div></div>
+</div>
+
+<script>/* Musik & Landesound: Dateien im Ordner musik/ neben dieser HTML-Datei */
+const AUDIO={push:"musik/push.ogg",forest:"musik/forest.ogg",ghost:"musik/ghost.ogg",dungeon:"musik/dungeon.ogg",bar:"musik/bar.ogg",land:"musik/land.ogg"};</script>
+<script>
+/* ============ EINSTELLUNGEN ============ */
+// Intervalle: f = Vielfaches der Basis-Watt, s = Sekunden
+// fast:true = mehr Watt geht schneller: ab f × FAST_MAX doppeltes Tempo (halbe Zeit); unter f sinkt der Balken
+const LOAD = {
+  zaun:{f:1.3,s:40},                // über den Zaun / das Gartentor
+  tuer:{f:1.3,s:60,fast:true},      // Haustür aufbrechen
+  feuer:{f:2.0,s:30,fast:true},     // Kamin anzünden
+  balg:{f:1.15,s:60,fast:true},     // Blasebalg
+  treppe:{f:1.2,s:60},              // Treppe zum ersten Mal hoch
+  stufen:{f:1.1,s:30},              // Treppe später (hoch oder runter)
+  lauf:{f:1.1,s:60},                // Geisterwiese hin zum Apfelbaum
+  rueckweg:{f:0.8,s:80},            // Geisterwiese zurück (locker, die Geister mögen dich)
+  ruetteln:{f:1.5,s:90,fast:true},  // am Apfelbaum rütteln
+  feilen:{f:1.0,s:60,fast:true},    // Zufallsereignis: Nägel feilen
+  gruft:{f:1.15,s:90,fast:true},    // Gruft aufstemmen
+  pauseKamin:{f:0.9,s:60},          // Pause nach dem Schallplatten-Rätsel (Halle)
+  pauseBaum:{f:0.9,s:60}            // Pause nach dem Geister-Rätsel (Apfelbaum)
+};
+const FAST_MAX = 1.4;
+const GIFT = { title:'Gutschein', text:'für Dampfnudeln und Gulasch' };
+const CALIB_SECS = 180, JUMP = 36, COOL_SECS = 120;
+const MUSIC_VOL = 0.5, FADE_S = 1.5;   // Lautstärke der Musik (0–1), Ein-/Ausblenden in Sekunden
+
+const $=id=>document.getElementById(id);
+const IS_CTL = new URLSearchParams(location.search).has('ctl');
+const PREFIX='beckington-v1-';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ HANDY ============ */
+if(IS_CTL){
+  document.body.classList.add('ctl');
+  const code=(new URLSearchParams(location.search).get('ctl')||'').toUpperCase();
+  let conn=null, wake=null; const st=$('ctlState');
+  const send=o=>{ if(conn&&conn.open) conn.send(o); };
+  document.addEventListener('click',async()=>{ try{ if('wakeLock' in navigator && !wake) wake=await navigator.wakeLock.request('screen'); }catch(e){} });
+  function render(u){
+    let h='';
+    if(u.m==='explore') h=`<div id="ctlTitle">${u.room}</div><div id="ctlText">${u.pedal?'Tippe an, was du untersuchen willst:':'Erst treten!'}</div>`+u.items.map(i=>`<button class="cbtn" data-pick="${i.id}" ${u.pedal?'':'disabled'}>${i.label}</button>`).join('');
+    else if(u.m==='text') h=`<div id="ctlTitle">${u.title||''}</div><div id="ctlText">${u.text}</div><button class="cbtn" data-next="1">Weiter ▶</button>`;
+    else if(u.m==='hold') h=`<div id="ctlTitle">${u.title}</div><div id="ctlText">${u.label}</div><div id="ctlBar"><i style="width:${u.prog}%"></i></div><div class="small">${u.now}</div>`;
+    else if(u.m==='lock') h=`<div id="ctlTitle">🔒 Zahlenschloss</div><div id="ctlText">Eingegeben: <b>${u.got.join(' ')||'–'}</b> (${u.n} Ziffern)</div><div class="keypad">${[1,2,3,4,5,6,7,8,9,'',0,''].map(d=>d===''?'<span></span>':`<button data-digit="${d}">${d}</button>`).join('')}</div><button class="cbtn" data-cancel="1" style="margin-top:12px">Abbrechen</button>`;
+    else if(u.m==='sort') h=`<div id="ctlTitle">🎶 Schallplatten sortieren</div><div id="ctlText">Vom ersten bis zum neuesten Album – tippe sie der Reihe nach an.${u.msg?'<br><b>'+u.msg+'</b>':''}</div>${u.placed.length?`<div class="small" style="margin-bottom:10px">Schon sortiert: ${u.placed.join(' · ')}</div>`:''}`+u.rest.map(r=>`<button class="cbtn" data-rec="${r.i}">💿 ${r.t}</button>`).join('');
+    else if(u.m==='choice') h=`<div id="ctlTitle">❓ Entscheidung</div><div id="ctlText">${u.q}</div>`+u.opts.map((o,i)=>`<button class="cbtn" data-choice="${i}">${o}</button>`).join('');
+    else if(u.m==='gift') h= u.open
+      ? `<div class="voucher">🎁<b>Gutschein</b>für Dampfnudeln und Gulasch</div><button class="cbtn" data-next="1">Weiter ▶</button>`
+      : `<div id="ctlTitle">🎁 Ein Geschenk für dich!</div><button class="giftBtn" data-gift="1">🎁</button><div class="small" style="text-align:center">Tippe auf das Geschenk</div>`;
+    else h=`<div id="ctlText">${u.text||'Schau auf den großen Bildschirm.'}</div>`;
+    $('ctlBody').innerHTML=h;
+    $('ctlNotesList').innerHTML = u.notes&&u.notes.length ? u.notes.map(n=>'• '+n).join('<br>') : 'Noch keine Hinweise.';
+  }
+  $('ctlBody').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.pick) send({t:'pick',id:b.dataset.pick}); if(b.dataset.next) send({t:'next'}); if(b.dataset.cancel) send({t:'cancel'}); if(b.dataset.gift) send({t:'gift'}); if(b.dataset.rec!==undefined) send({t:'rec',i:+b.dataset.rec});
+    if(b.dataset.digit!==undefined) send({t:'digit',d:+b.dataset.digit}); if(b.dataset.choice!==undefined) send({t:'choice',i:+b.dataset.choice});
+    navigator.vibrate&&navigator.vibrate(15); });
+  if(!window.Peer) st.textContent='Online-Modul fehlt – Internet prüfen.';
+  else{ const peer=new Peer();
+    peer.on('open',()=>{ st.textContent='Verbinde mit Spiel '+code+'…'; conn=peer.connect(PREFIX+code,{reliable:true});
+      conn.on('open',()=>{ st.textContent='✓ Verbunden – einmal tippen, damit der Bildschirm wach bleibt.'; send({t:'hello'}); });
+      conn.on('data',m=>{ if(m.t==='ui') render(m.u); if(m.t==='buzz') navigator.vibrate&&navigator.vibrate([120,60,120]);
+        if(m.t==='secret'){ const s=$('secret'); s.innerHTML=m.html; s.style.display='block'; navigator.vibrate&&navigator.vibrate(200); } });
+      conn.on('close',()=>st.textContent='Verbindung getrennt. Seite neu laden.'); });
+    peer.on('error',e=>st.textContent= e.type==='peer-unavailable' ? 'Spiel nicht gefunden – stimmt der Code?' : 'Fehler: '+e.type); }
+}
+
+/* ============ SPIEL ============ */
+if(!IS_CTL){
+const live={p:0,c:null,hr:null,src:'sim'};
+const sim={w:0};
+const st={scene:null,mode:'idle',pS:0,stopT:0,t:0,flags:{},notes:[],wSum:0,wMax:0,hrSum:0,hrT:0,running:false,base:80,phone:false,
+  calib:{sum:0,n:0,t:0},name:'Philipp Beckington',wegK:-1,order:[]};
+const F=st.flags;
+const fmtT=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+const W=f=>Math.round(st.base*f);
+const N=()=>esc(st.name);
+const SUR=()=>esc(String(st.name).trim().split(/\s+/).pop());
+let SPEED=1;
+const power=()=> live.src==='ble'? live.p : sim.w;
+const pedaling=()=> st.pS>=30 || (live.c!=null && live.c>=35);
+
+/* ---------- Szenen ---------- */
+const DEFS=`<defs>
+<linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070a22"/><stop offset="1" stop-color="#232560"/></linearGradient>
+<radialGradient id="vign" cx="50%" cy="42%" r="72%"><stop offset="58%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".6"/></radialGradient>
+<radialGradient id="fireglow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb347" stop-opacity=".6"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+<radialGradient id="appleglow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".8"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient>
+</defs>`;
+const stars=(n,h=330)=>Array.from({length:n},(_,i)=>`<circle class="tw" style="animation-delay:${-(i%7)*.4}s" cx="${(i*197+31)%1200}" cy="${(i*89+17)%h}" r="${1+(i%3)*.8}" fill="#fff"/>`).join('');
+const moon=(x,y,r=40)=>`<circle cx="${x}" cy="${y}" r="${r*2}" fill="#f4f0dc" opacity=".08"/><circle cx="${x}" cy="${y}" r="${r}" fill="#f4f0dc"/><circle cx="${x-12}" cy="${y-8}" r="${r*.18}" fill="#ddd6bc"/><circle cx="${x+14}" cy="${y+12}" r="${r*.12}" fill="#ddd6bc"/>`;
+const vign='<rect width="1200" height="700" fill="url(#vign)" pointer-events="none"/>';
+const spikes=(x1,x2,y1,y2,step=24,skip=null)=>{ let s=''; for(let x=x1;x<=x2;x+=step){ if(skip&&x>skip[0]&&x<skip[1]) continue;
+  s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/><path d="M${x-6} ${y1+2} L${x} ${y1-14} L${x+6} ${y1+2}Z" fill="#14121c"/>`; } return s; };
+const fence=(x1,x2,y1,y2,skip)=>`<g stroke="#14121c" stroke-width="5">${spikes(x1,x2,y1,y2,24,skip)}<line x1="${x1}" y1="${y1+12}" x2="${x2}" y2="${y1+12}"/><line x1="${x1}" y1="${y2-10}" x2="${x2}" y2="${y2-10}"/></g>`;
+const ghost=(x,y,s,d)=>`<g transform="translate(${x} ${y}) scale(${s})"><g class="ghost" style="animation-delay:${d}s"><path d="M-30 30 V-10 a30 30 0 0 1 60 0 V30 l-10 -10 l-10 10 l-10 -10 l-10 10 l-10 -10Z" fill="#eef2ff" opacity=".78"/><ellipse cx="-10" cy="-6" rx="5" ry="7" fill="#1b1a2e"/><ellipse cx="10" cy="-6" rx="5" ry="7" fill="#1b1a2e"/><ellipse cx="0" cy="10" rx="5" ry="6" fill="#1b1a2e"/></g></g>`;
+
+/* ---------- Figuren ---------- */
+const SKIN='#e8c09c', HAIR='#2a1a12';
+function beckHead(){ return `<g>
+<path d="M-29 8 Q-33 -8 -29 -24 Q-25 -36 -13 -40 Q0 -44 12 -41 Q25 -37 29 -24 Q33 -8 29 8 Q27 2 26 -4 L-26 -4 Q-27 2 -29 8Z" fill="${HAIR}"/>
+<ellipse cx="-26" cy="6" rx="5" ry="8" fill="${SKIN}"/><ellipse cx="26" cy="6" rx="5" ry="8" fill="${SKIN}"/>
+<ellipse cx="0" cy="4" rx="25" ry="32" fill="${SKIN}"/>
+<path d="M-25 -12 L-26 9 L-22 9 L-20 -10Z M25 -12 L26 9 L22 9 L20 -10Z" fill="${HAIR}"/>
+<path d="M-26 -8 Q-28 -34 -2 -37 Q25 -37 27 -12 Q22 -23 10 -22 Q0 -17 -8 -23 Q-18 -27 -26 -8Z" fill="${HAIR}"/>
+<path d="M-12 -36 Q2 -40 14 -35 M-18 -29 Q-6 -33 6 -30" stroke="#4a3022" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M-17 -6 q8 -6 14 -1 M3 -7 q8 -5 14 1" stroke="${HAIR}" stroke-width="4" fill="none" stroke-linecap="round"/>
+<ellipse cx="-9" cy="2" rx="3.6" ry="3" fill="#4a3424"/><ellipse cx="9" cy="2" rx="3.6" ry="3" fill="#4a3424"/>
+<path d="M0 4 q-4 9 -1 12 q3 1 5 -1" stroke="#b88a6a" stroke-width="2" fill="none"/>
+<path d="M-19 16 q3 20 19 22 q16 -2 19 -22 q-6 9 -19 9 q-13 0 -19 -9z" fill="#3a2618" opacity=".9"/>
+<path d="M-13 19 q13 -7 26 0 q-7 3 -13 2 q-6 1 -13 -2z" fill="${HAIR}"/>
+<path d="M-6 24 q6 2 12 0" stroke="#8a4a3a" stroke-width="2" fill="none"/></g>`; }
+function queenHead(cap=false){ return `<g>
+<ellipse cx="0" cy="0" rx="33" ry="35" fill="#241612"/><circle cx="-29" cy="20" r="9" fill="#241612"/><circle cx="29" cy="20" r="9" fill="#241612"/>
+<ellipse cx="0" cy="5" rx="23" ry="29" fill="#f0d0b4"/>
+${cap?`<path d="M-30 -6 q2 -34 30 -34 q28 0 30 34z" fill="#3a3a44"/><path d="M-30 -6 h50 q18 0 22 8 h-72z" fill="#2a2a34"/><g transform="translate(0 -26)"><ellipse cx="-10" cy="0" rx="9" ry="6" fill="#111"/><ellipse cx="10" cy="0" rx="9" ry="6" fill="#111"/><line x1="-1" y1="0" x2="1" y2="0" stroke="#111" stroke-width="3"/></g>`
+     :`<path d="M-26 -6 q2 -24 26 -26 q24 2 26 24 q-6 -6 -12 -3 q-6 -7 -13 -2 q-7 -6 -14 1 q-7 -4 -13 6z" fill="#241612"/>`}
+<path d="M-15 -3 q6 -4 12 -1 M3 -4 q6 -3 12 1" stroke="#241612" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="-9" cy="4" rx="3.4" ry="3" fill="#2a1a10"/><ellipse cx="9" cy="4" rx="3.4" ry="3" fill="#2a1a10"/>
+<path d="M0 6 q-3 7 0 10" stroke="#c0947a" stroke-width="1.8" fill="none"/>
+<circle cx="-14" cy="14" r="5" fill="#f4a0a0" opacity=".4"/><circle cx="14" cy="14" r="5" fill="#f4a0a0" opacity=".4"/>
+<path d="M-8 20 q8 -4 16 0 q-8 6 -16 0z" fill="#c0283a"/>
+<circle cx="-24" cy="16" r="2.5" fill="#d9b44a"/><circle cx="24" cy="16" r="2.5" fill="#d9b44a"/></g>`; }
+function beckBody(){ return `<g>
+<rect x="-15" y="84" width="12" height="66" rx="6" fill="${SKIN}"/><rect x="3" y="84" width="12" height="66" rx="6" fill="${SKIN}"/>
+<path d="M-27 34 q27 -8 54 0 l-4 54 q-23 6 -46 0z" fill="${SKIN}"/>
+<path d="M-12 50 q4 4 8 0 M4 50 q4 4 8 0 M0 64 v10" stroke="#c99a76" stroke-width="2" fill="none"/>
+<path d="M-24 80 h48 l3 28 h-24 l-3 -9 l-3 9 h-24z" fill="#1e2440"/><rect x="-24" y="80" width="48" height="5" fill="#3a4470"/>
+<path d="M-26 38 q-18 20 -22 46 M26 38 q18 20 22 46" stroke="${SKIN}" stroke-width="11" stroke-linecap="round" fill="none"/>
+${beckHead()}</g>`; }
+function frame(x,y,w,h,inner){ return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#c9a24a" stroke="#8a6a2a" stroke-width="4"/><svg x="${x+8}" y="${y+8}" width="${w-16}" height="${h-16}" viewBox="0 0 100 ${Math.round(100*(h-16)/(w-16))}" preserveAspectRatio="xMidYMid slice">${inner}</svg></g>`; }
+function picJagd(){ return `<rect width="100" height="120" fill="#4a6a44"/><path d="M0 90 Q50 80 100 92 V120 H0z" fill="#3a5434"/>
+<path d="M22 120 q28 -40 56 0z" fill="#6a4a2a"/><line x1="8" y1="118" x2="92" y2="60" stroke="#3a2418" stroke-width="5"/><line x1="78" y1="70" x2="96" y2="57" stroke="#555" stroke-width="3"/>
+<g transform="translate(50 62) scale(.62)">${beckHead()}<path d="M-34 -28 q34 -30 68 0z" fill="#3a5a2a"/><rect x="-40" y="-30" width="80" height="6" rx="3" fill="#2a4a1e"/><path d="M24 -36 q14 -18 22 -26" stroke="#c9a24a" stroke-width="3" fill="none"/></g>`; }
+function picGeist(){ return `<rect width="100" height="120" fill="#24183a"/><circle cx="80" cy="20" r="10" fill="#f4f0dc" opacity=".8"/>
+<path d="M14 120 q4 -60 36 -78 q32 18 36 78z" fill="#5a2a7a"/><path d="M26 64 q24 -46 48 0" fill="#4a1a6a"/>
+<g transform="translate(50 64) scale(.6)">${beckHead()}</g><path d="M22 52 q28 -44 56 0 q-6 -30 -28 -32 q-22 2 -28 32z" fill="#4a1a6a"/>
+<rect x="14" y="94" width="7" height="16" fill="#efe7cf"/><path class="flame" d="M17.5 94 q-4 -6 0 -11 q4 5 0 11z" fill="#ffd25a"/>
+<g transform="translate(80 70) scale(.35)"><path d="M-30 30 V-10 a30 30 0 0 1 60 0 V30 l-10 -10 l-10 10 l-10 -10 l-10 10 l-10 -10Z" fill="#eef2ff" opacity=".85"/><ellipse cx="-10" cy="-6" rx="5" ry="7" fill="#1b1a2e"/><ellipse cx="10" cy="-6" rx="5" ry="7" fill="#1b1a2e"/></g>`; }
+function picSelfie(){ return `<rect width="100" height="86" fill="#f2ede4"/><path d="M0 20 q10 -6 22 4 q8 10 18 30 L40 86 H0z" fill="#9a8270"/><circle cx="24" cy="22" r="6" fill="#4a6a3a"/>
+<path d="M34 50 L100 34 V86 H34z" fill="#3a7aa8"/><path d="M78 40 h16 v5 h-18z M70 50 h22 v4 h-22z" fill="#f4f0e8"/><rect x="72" y="54" width="20" height="3" fill="#e0b030"/>
+<path d="M4 86 q20 -18 38 -14 q14 4 18 14z" fill="#f4f4f0"/><g transform="translate(34 50) scale(.5)">${beckHead()}</g>
+<path d="M52 86 q14 -16 32 -12 q10 4 12 12z" fill="#5a7a5a"/><path d="M58 78 h30 M56 82 h34" stroke="#e8e8e0" stroke-width="2"/>
+<g transform="translate(72 58) scale(.42)">${queenHead(true)}</g>`; }
+function picQueen(){ return `<rect width="100" height="140" fill="#3a2a5a"/><path d="M14 140 Q50 70 86 140Z" fill="#8a3aa8"/><path d="M34 140 Q50 90 66 140" stroke="#f3cf6b" stroke-width="3" fill="none"/>
+<path d="M36 92 q14 10 28 0" stroke="#f4f0dc" stroke-width="4" fill="none"/>
+<g transform="translate(50 58) scale(.7)">${queenHead()}<path d="M-20 -32 L-16 -54 L-8 -40 L0 -58 L8 -40 L16 -54 L20 -32Z" fill="#f3cf6b" stroke="#a87a1a" stroke-width="2"/><circle cx="0" cy="-46" r="3" fill="#e0457b"/></g>`; }
+function closeSvg(){ return `<svg viewBox="-80 -80 160 190"><circle cx="0" cy="0" r="80" fill="#f3cf6b" opacity=".12"/>
+<path d="M-70 110 q8 -50 44 -64 q26 -6 52 0 q36 14 44 64z" fill="${SKIN}"/><path d="M-14 66 q14 6 28 0" stroke="#c99a76" stroke-width="2" fill="none"/>
+<g transform="scale(1.35)">${beckHead()}</g></svg>`; }
+function village(k){const w=[0,0,.2,.5,.85,1][k];let s='';[[0,22,'#b86a5a'],[30,18,'#9a7aa8'],[56,26,'#c49a5a'],[90,16,'#7a8fa6']].forEach(([x,h,c])=>{s+=`<rect x="${x}" y="${-h}" width="24" height="${h}" fill="${c}"/><path d="M${x-3} ${-h} L${x+12} ${-h-14} L${x+27} ${-h}Z" fill="#5a3a3a"/><rect x="${x+8}" y="${-h+6}" width="7" height="7" fill="#ffd36b" opacity="${w}"/>`});return s;}
+function farHouse(k){const HL=['#6c9450','#5e8447','#596b40','#424c37','#283229','#141b24'][k],lit=k>=3?'#f3cf6b':'#4a4458',op=k>=3?.4+k*.12:1;
+return `<ellipse cx="0" cy="6" rx="95" ry="22" fill="${HL}"/>
+<path d="M-62 4 q-4 -30 -16 -44 M-70 -22 q-10 -6 -16 -4 M-72 -32 q6 -10 14 -12" stroke="#2a2030" stroke-width="3" fill="none" stroke-linecap="round"/>
+<rect x="-36" y="-52" width="72" height="52" fill="#2a2234"/><path d="M-44 -50 L0 -90 L44 -50Z" fill="#1c1626"/>
+<rect x="20" y="-104" width="18" height="54" fill="#241d2e"/><path d="M16 -104 L29 -132 L42 -104Z" fill="#1c1626"/>
+<rect x="25" y="-92" width="8" height="10" fill="${lit}" opacity="${op}"/><rect x="-28" y="-42" width="12" height="14" fill="${lit}" opacity="${op}" transform="rotate(-6 -22 -35)"/>
+<rect x="8" y="-40" width="12" height="13" fill="${lit}" opacity="${op*.6}"/><circle cx="0" cy="-64" r="5" fill="${lit}" opacity="${op*.8}"/>
+<path d="M-8 0 V-18 a8 8 0 0 1 16 0 V0Z" fill="#100c16"/>
+<path d="M-50 2 v-10 M-44 2 v-12 M-38 2 v-9 M50 2 v-10 M44 2 v-12 M38 2 v-9 M-52 -4 h18 M34 -4 h18" stroke="#1a1420" stroke-width="2"/>`;}
+function weg(k){
+  const SKY=['#8ec5ea','#b7c8d8','#f0b27a','#cf6f7f','#4b3d7a','#141b3f'],GR=['#7fae5c','#6f9a52','#6a7d48','#4e5a3e','#2f3a35','#1a2230'],PA=['#d8c39a','#cdb88f','#b9a07a','#8f7a62','#5a5048','#3a3640'];
+  const HX=[318,300,280,258,232,205],HY=[95,100,108,118,130,148],S=[.3,.4,.55,.72,.9,1.05],SY=[25,45,68,90,112,150],MO=[0,0,0,.35,.8,1],AX=[62,80,98,116,136,160];
+  const sts=k>=4?Array.from({length:30},(_,j)=>`<circle cx="${(j*97+20)%380}" cy="${(j*41+8)%95}" r="${j%3?.5:.8}" fill="#fff" opacity="${k===5?.9:.5}"/>`).join(''):'';
+  return `<g transform="scale(3.158)"><rect width="380" height="222" fill="${SKY[k]}"/>${sts}
+  <circle cx="150" cy="${SY[k]}" r="13" fill="${k<2?'#ffe08a':'#ff9a5a'}"/>
+  <circle cx="322" cy="34" r="22" fill="#f4f0dc" opacity="${MO[k]*.1}"/><circle cx="322" cy="34" r="13" fill="#f4f0dc" opacity="${MO[k]}"/>
+  <rect y="105" width="380" height="117" fill="${GR[k]}"/>
+  <g transform="translate(${20-k*34} 108) scale(${1-k*.13})">${village(k)}</g>
+  <path d="M40 224 Q150 170 ${HX[k]} ${HY[k]+4}" stroke="${PA[k]}" stroke-width="${8+k*2}" fill="none" stroke-linecap="round"/>
+  <g transform="translate(${HX[k]} ${HY[k]}) scale(${S[k]})">${farHouse(k)}</g>
+  <g transform="translate(${AX[k]} 158)"><line x1="-3" y1="0" x2="-5" y2="12" stroke="#2a1f3d" stroke-width="3" stroke-linecap="round"/><line x1="3" y1="0" x2="6" y2="11" stroke="#2a1f3d" stroke-width="3" stroke-linecap="round"/><rect x="-6" y="-16" width="12" height="17" rx="4" fill="#e46aa0"/><circle cx="0" cy="-21" r="5.5" fill="#f0cbb0"/><path d="M-6.8 -18 Q-7.6 -28 0 -28.2 Q7.6 -28 6.8 -18 q-1.1 1.6 -2.3 .2 q-1.1 1.6 -2.2 .1 q-1.1 1.6 -2.3 .1 q-1.1 1.6 -2.2 .1 q-1.2 1.4 -2.4 -.1Z" fill="#241612"/></g>
+  </g>`;}
+
+const SC={};
+SC.weg={name:'Der Weg zum Haus', svg:()=>weg(Math.max(0,st.wegK))};
+function spkBubble(id,x,y){ return `<g id="${id}" style="display:none"><path d="M${x-34} ${y-22} h68 a14 14 0 0 1 14 14 v16 a14 14 0 0 1 -14 14 h-24 l-12 14 l-2 -14 h-30 a14 14 0 0 1 -14 -14 v-16 a14 14 0 0 1 14 -14z" fill="#fff7ee" stroke="#5a4030" stroke-width="2"/><g fill="#5a4030"><circle cx="${x-14}" cy="${y}" r="4"/><circle cx="${x}" cy="${y}" r="4"/><circle cx="${x+14}" cy="${y}" r="4"/></g></g>`; }
+SC.cafe={name:'Im Dorfcafé', svg:()=>`
+<defs><linearGradient id="daysky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb8e2"/><stop offset="1" stop-color="#d9e8ef"/></linearGradient></defs>
+<rect width="1200" height="700" fill="url(#daysky)"/>
+<circle cx="200" cy="95" r="70" fill="#ffe08a" opacity=".25"/><circle cx="200" cy="95" r="38" fill="#ffe08a"/>
+<g fill="#fff" opacity=".85"><ellipse cx="470" cy="80" rx="70" ry="20"/><ellipse cx="510" cy="68" rx="44" ry="20"/><ellipse cx="830" cy="110" rx="80" ry="18"/><ellipse cx="870" cy="98" rx="46" ry="18"/></g>
+<path d="M0 300 Q300 250 640 290 L640 362 L0 362Z" fill="#9cc27a"/>
+<path d="M560 362 Q800 300 960 228 Q1060 192 1200 214 L1200 362Z" fill="#7fae5c"/>
+<path d="M700 362 Q860 300 930 270 Q970 250 992 226" stroke="#d8c39a" stroke-width="6" fill="none" stroke-linecap="round"/>
+<g transform="translate(1000 222) scale(.8)">${farHouse(0)}</g>
+${[[300,110,150,'#c98a6a'],[410,96,186,'#b7a3c4'],[660,104,140,'#d9b36a'],[764,96,168,'#8fa6b8'],[860,90,122,'#c4927a']].map(([x,w,h,c])=>`<rect x="${x}" y="${362-h}" width="${w}" height="${h}" fill="${c}" stroke="#6a4a3a" stroke-width="2"/><path d="M${x-8} ${362-h} L${x+w/2} ${362-h-46} L${x+w+8} ${362-h}Z" fill="#8a4a3a"/>
+ ${[0,1].map(r=>[0,1].map(cc=>`<rect x="${x+16+cc*(w-50)}" y="${362-h+22+r*52}" width="18" height="24" fill="#e8eef4" stroke="#6a4a3a" stroke-width="2"/>`).join('')).join('')}`).join('')}
+<rect x="516" y="242" width="128" height="120" fill="#ece4d4" stroke="#6a5a4a" stroke-width="2"/><rect x="586" y="128" width="50" height="234" fill="#e2d8c4" stroke="#6a5a4a" stroke-width="2"/><path d="M580 128 L611 52 L642 128Z" fill="#5a6a7a"/><circle cx="611" cy="160" r="13" fill="#fff" stroke="#6a5a4a" stroke-width="2"/><path d="M611 160 v-8 M611 160 h6" stroke="#333" stroke-width="2"/><path d="M540 362 V320 a14 14 0 0 1 28 0 V362Z" fill="#6a4a3a"/>
+<rect y="360" width="1200" height="340" fill="#d2bf98"/>
+<g stroke="#bba67e" stroke-width="2">${[388,420,460,510,570,640].map((y,r)=>`<line x1="0" y1="${y}" x2="1200" y2="${y}"/>`+Array.from({length:Math.round(14+r*1.5)},(_,i)=>{const sp=1200/(14+r*1.5), x=i*sp+(r%2?sp/2:0); return `<line x1="${x}" y1="${[360,388,420,460,510,570][r]}" x2="${x}" y2="${y}"/>`}).join('')).join('')}</g>
+<g><rect x="40" y="150" width="290" height="212" fill="#efe0c4" stroke="#6a4a3a" stroke-width="3"/><path d="M28 152 L185 96 L342 152Z" fill="#8a4a3a"/>
+ <rect x="110" y="168" width="150" height="40" rx="8" fill="#5a3a2a"/><text x="185" y="197" font-family="Fraunces" font-weight="800" font-size="26" fill="#f6e6c8" text-anchor="middle">Café</text>
+ ${Array.from({length:9},(_,i)=>`<path d="M${50+i*30} 232 h30 l${i<4?-2:2} 40 h-30z" fill="${i%2?'#fff4e8':'#e46aa0'}"/>`).join('')}<path d="M50 232 h270" stroke="#a84a72" stroke-width="3"/>
+ <path d="M50 272 ${Array.from({length:9},(_,i)=>`q15 12 30 0`).join(' ')}" fill="#e46aa0" opacity=".9"/>
+ <rect x="66" y="290" width="110" height="62" fill="#a8c8dc" stroke="#6a4a3a" stroke-width="3"/><line x1="121" y1="290" x2="121" y2="352" stroke="#6a4a3a" stroke-width="3"/>
+ <rect x="226" y="284" width="62" height="78" fill="#7a4a2a" stroke="#4a2a18" stroke-width="3"/><circle cx="278" cy="326" r="4" fill="#c9a24a"/></g>
+<g transform="translate(312 404)"><g stroke="#2a2836" stroke-width="5" fill="none"><circle cx="-44" cy="0" r="30"/><circle cx="44" cy="0" r="30"/></g>
+ <g stroke="#e46aa0" stroke-width="6" stroke-linecap="round" fill="none"><path d="M-44 0 L-10 -40 L0 0Z"/><path d="M-10 -40 L32 -38 L0 0"/><path d="M32 -38 L44 0"/><path d="M32 -38 L36 -52 L46 -54"/></g><path d="M-22 -46 h22" stroke="#2a2836" stroke-width="5" stroke-linecap="round"/></g>
+<g><ellipse cx="840" cy="414" rx="74" ry="15" fill="#f4ede0" stroke="#8a7a62" stroke-width="2"/><rect x="835" y="414" width="10" height="100" fill="#5a4a3a"/>
+ <g transform="translate(812 400)"><rect x="-8" y="0" width="16" height="12" rx="3" fill="#fff"/><ellipse cy="12" rx="12" ry="3" fill="#fff" stroke="#bbb"/></g><g transform="translate(868 400)"><rect x="-8" y="0" width="16" height="12" rx="3" fill="#fff"/><ellipse cy="12" rx="12" ry="3" fill="#fff" stroke="#bbb"/></g></g>
+<g><rect x="736" y="440" width="10" height="80" fill="#7a4a2a"/><rect x="732" y="360" width="10" height="90" fill="#7a4a2a"/>
+ <path d="M748 452 Q744 400 756 366 Q770 356 786 366 Q796 400 792 452Z" fill="#a08ac0"/><path d="M786 380 Q806 396 818 402" stroke="#a08ac0" stroke-width="12" stroke-linecap="round" fill="none"/><circle cx="820" cy="403" r="6" fill="${SKIN}"/>
+ <rect x="764" y="344" width="14" height="16" fill="${SKIN}"/><circle cx="772" cy="330" r="23" fill="${SKIN}"/>
+ <path d="M750 330 Q748 302 774 302 Q794 304 794 320 Q780 312 766 318 Q758 324 756 340Z" fill="#c8c4cc"/><circle cx="752" cy="306" r="12" fill="#c8c4cc"/>
+ <circle cx="786" cy="328" r="7" fill="none" stroke="#3a2a2a" stroke-width="2"/><path d="M793 334 l4 3" stroke="#b88a6a" stroke-width="2"/><path d="M784 344 q5 2 9 -1" stroke="#8a4a3a" stroke-width="2" fill="none"/></g>
+<g><rect x="934" y="440" width="10" height="80" fill="#7a4a2a"/><rect x="938" y="356" width="10" height="94" fill="#7a4a2a"/>
+ <path d="M888 452 Q884 398 896 362 Q912 350 928 362 Q940 398 936 452Z" fill="#5a7a4a"/><path d="M894 378 Q874 394 862 402" stroke="#5a7a4a" stroke-width="13" stroke-linecap="round" fill="none"/><circle cx="860" cy="403" r="6.5" fill="${SKIN}"/>
+ <rect x="904" y="338" width="16" height="18" fill="${SKIN}"/><circle cx="910" cy="324" r="25" fill="${SKIN}"/>
+ <path d="M886 318 Q888 292 914 292 Q936 294 936 316Z" fill="#7a5a3a"/><path d="M890 316 Q872 316 866 322 Q880 324 894 322Z" fill="#6a4a2a"/>
+ <circle cx="897" cy="324" r="3" fill="#2a1a10"/><path d="M886 334 q-6 4 -2 6" stroke="#b88a6a" stroke-width="2" fill="none"/><path d="M886 342 q8 -5 16 0 q-8 4 -16 0z" fill="#8a8a8a"/></g>
+${spkBubble('spk_f',772,262)}${spkBubble('spk_m',912,254)}
+<g><ellipse cx="546" cy="392" rx="88" ry="18" fill="#f4ede0" stroke="#8a7a62" stroke-width="2"/><rect x="541" y="392" width="10" height="140" fill="#5a4a3a"/></g>
+<g transform="translate(574 366)"><ellipse cx="0" cy="26" rx="22" ry="5" fill="#fff" stroke="#c8c0b0" stroke-width="1.5"/><path d="M-14 4 h28 q0 20 -14 22 q-14 -2 -14 -22z" fill="#fff" stroke="#c8c0b0" stroke-width="1.5"/><path d="M14 8 q10 0 8 8 q-2 6 -10 6" stroke="#c8c0b0" stroke-width="3" fill="none"/>
+ <ellipse cx="0" cy="4" rx="14" ry="4" fill="#e8d2b0"/><path d="M-3 3 q-3 -3 0 -4 q3 1 3 2 q0 -1 3 -2 q3 1 0 4 l-3 2z" fill="#a8744a"/>
+ <g stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"><path class="steam" d="M-5 -4 q-5 -8 0 -14 q5 -6 0 -14"/><path class="steam" style="animation-delay:-1.3s" d="M5 -4 q-5 -8 0 -14 q5 -6 0 -14"/></g></g>
+<g><path d="M404 470 Q398 380 410 318 Q442 300 474 318 Q488 380 482 470Z" fill="#e46aa0"/>
+ <rect x="432" y="284" width="18" height="22" fill="#f0cbb0"/>
+ <g transform="translate(441 262) scale(5.45) translate(0 21)"><circle cx="0" cy="-21" r="5.5" fill="#f0cbb0"/><path d="M-6.8 -18 Q-7.6 -28 0 -28.2 Q7.6 -28 6.8 -18 q-1.1 1.6 -2.3 .2 q-1.1 1.6 -2.2 .1 q-1.1 1.6 -2.3 .1 q-1.1 1.6 -2.2 .1 q-1.2 1.4 -2.4 -.1Z" fill="#241612"/></g>
+ <path d="M470 326 Q512 352 552 386" stroke="#e46aa0" stroke-width="15" stroke-linecap="round" fill="none"/><circle cx="556" cy="389" r="8" fill="#f0cbb0"/>
+ <g fill="#7a4a2a"><rect x="398" y="398" width="92" height="10" rx="3"/><rect x="400" y="370" width="9" height="160"/><rect x="479" y="370" width="9" height="160"/></g></g>
+${vign}`};
+SC.vorgarten={name:'Der Vorgarten', svg:()=>`
+<rect width="1200" height="700" fill="url(#night)"/>${stars(40,200)}${moon(1080,90)}
+<rect y="400" width="1200" height="300" fill="#18212c"/>
+<g>
+ <rect x="500" y="130" width="520" height="290" fill="#2a2234"/><path d="M470 135 L760 10 L1050 135Z" fill="#1c1626"/>
+ <rect x="900" y="40" width="70" height="100" fill="#241d2e"/><path d="M890 40 L935 -20 L980 40Z" fill="#1c1626"/>
+ ${[[560,170],[660,170],[860,170],[960,170],[560,290],[960,290]].map(([x,y],i)=>`<rect x="${x}" y="${y}" width="44" height="56" fill="#f3cf6b" opacity="${[.25,.08,.15,.3,.1,.2][i]}" transform="rotate(${i%2?3:-4} ${x+22} ${y+28})"/>`).join('')}
+ <rect x="925" y="70" width="20" height="26" fill="#f3cf6b" opacity=".4"/>
+</g>
+<path d="M300 365 q-10 -90 -40 -130 M282 300 q-30 -16 -46 -10 M275 270 q20 -26 40 -30" stroke="#120f18" stroke-width="9" fill="none" stroke-linecap="round"/>
+<path d="M730 420 L810 420 L430 470 L330 470Z" fill="#37324a"/>
+<g class="hs" data-id="tuer"><rect x="700" y="418" width="140" height="12" fill="#3a3448"/><path d="M720 420 V315 a50 50 0 0 1 100 0 V420Z" fill="#3a2418" stroke="#120c08" stroke-width="5"/><line x1="770" y1="270" x2="770" y2="420" stroke="#120c08" stroke-width="3"/><circle cx="800" cy="365" r="6" fill="#c9a24a"/></g>
+<g class="hs" data-id="briefkasten"><rect x="555" y="390" width="10" height="45" fill="#2a2a30"/><path d="M525 395 V372 a35 22 0 0 1 70 0 V395Z" fill="#4a5a6a" stroke="#1a1f26" stroke-width="3"/><rect x="595" y="360" width="6" height="26" fill="#b83a3a"/></g>
+<g class="hs" data-id="garten"><path d="M980 470 Q1080 440 1200 420 L1200 452 Q1100 470 1030 480Z" fill="#2e3a44"/><rect x="1105" y="378" width="8" height="60" fill="#3a2a20"/><rect x="1060" y="352" width="110" height="32" rx="4" fill="#5a4030"/><text x="1115" y="374" font-family="Nunito" font-weight="800" font-size="17" fill="#f3e6c8" text-anchor="middle">Garten ›</text></g>
+${fence(0,1200,438,520,[290,450])}
+<g class="hs" data-id="tor"><g stroke="#14121c" stroke-width="5">${spikes(300,440,422,520,20)}<path d="M296 432 Q370 392 444 432" fill="none"/><line x1="296" y1="450" x2="444" y2="450"/><line x1="296" y1="508" x2="444" y2="508"/></g><circle cx="370" cy="470" r="9" fill="#7a6a4a"/></g>
+${vign}`};
+
+SC.halle={name:'Die Eingangshalle', svg:()=>`
+<rect width="1200" height="700" fill="#2b2030"/>${Array.from({length:14},(_,i)=>`<rect x="${i*90}" y="0" width="45" height="470" fill="#30243a"/>`).join('')}
+<rect y="470" width="1200" height="230" fill="#3a2a22"/><g stroke="#2a1d16" stroke-width="3">${Array.from({length:12},(_,i)=>`<line x1="${i*110}" y1="470" x2="${i*110-60}" y2="700"/>`).join('')}</g>
+<g class="hs" data-id="haustuer"><rect x="20" y="300" width="80" height="170" fill="#3a2418" stroke="#120c08" stroke-width="5"/><circle cx="88" cy="390" r="5" fill="#c9a24a"/></g>
+<g class="hs" data-id="schrank"><rect x="600" y="220" width="140" height="250" rx="6" fill="#4a3226" stroke="#24160e" stroke-width="5"/><line x1="670" y1="230" x2="670" y2="460" stroke="#24160e" stroke-width="4"/><circle cx="660" cy="345" r="5" fill="#c9a24a"/><circle cx="680" cy="345" r="5" fill="#c9a24a"/><path d="M590 220 L750 220 L740 200 L600 200Z" fill="#3a241a"/>
+ <g id="schal" style="display:none"><path d="M664 400 q-7 30 1 52 q4 14 -5 24 l22 2 q6 -16 2 -30 q-5 -22 1 -48z" fill="#c0283a" stroke="#7a1420" stroke-width="2"/><path d="M660 476 l-2 9 M666 477 l-1 9 M672 478 l0 9 M678 478 l1 8" stroke="#c0283a" stroke-width="3" stroke-linecap="round"/><path d="M662 430 q8 3 15 0 M664 452 q8 3 14 0" stroke="#e8505e" stroke-width="2" fill="none"/></g></g>
+<g class="hs" data-id="uhr"><rect x="775" y="230" width="60" height="240" rx="6" fill="#3a2a20" stroke="#1a120c" stroke-width="4"/><circle cx="805" cy="275" r="22" fill="#e8dfc4"/><line x1="805" y1="275" x2="805" y2="258" stroke="#222" stroke-width="3"/><line x1="805" y1="275" x2="806" y2="262" stroke="#222" stroke-width="4"/><circle cx="805" cy="390" r="12" fill="#c9a24a"/><line x1="805" y1="310" x2="805" y2="380" stroke="#c9a24a" stroke-width="2"/></g>
+<g class="hs" data-id="treppe"><path d="M880 470 ${Array.from({length:10},(_,i)=>`L${880+i*32} ${470-i*30} L${912+i*32} ${470-i*30}`).join(' ')} L1200 170 L1200 470Z" fill="#4a3428" stroke="#24160e" stroke-width="3"/><line x1="880" y1="400" x2="1200" y2="100" stroke="#6a4a30" stroke-width="7"/>${Array.from({length:8},(_,i)=>`<line x1="${900+i*40}" y1="${381-i*37.5}" x2="${900+i*40}" y2="${451-i*30}" stroke="#6a4a30" stroke-width="4"/>`).join('')}</g>
+<rect id="hallDark" width="1200" height="700" fill="#05040a" opacity=".8" pointer-events="none"/>
+<g pointer-events="none"><rect x="130" y="110" width="140" height="190" fill="#1b2550" stroke="#24160e" stroke-width="8"/>${moon(220,165,22)}<line x1="200" y1="110" x2="200" y2="300" stroke="#24160e" stroke-width="5"/><line x1="130" y1="205" x2="270" y2="205" stroke="#24160e" stroke-width="5"/><path d="M130 300 L270 300 L420 700 L120 700Z" fill="#b8c6ff" opacity=".07"/></g>
+<g class="hs" data-id="kamin" id="kaminG">
+ <rect x="300" y="250" width="220" height="220" fill="#5c5660" stroke="#3a363e" stroke-width="5"/><rect x="285" y="235" width="250" height="20" fill="#4a3a30"/>
+ <path d="M340 470 V345 Q410 305 480 345 V470Z" fill="#120c10"/>
+ <g fill="#3a2a1e"><rect x="365" y="445" width="90" height="14" rx="6" transform="rotate(-8 410 452)"/><rect x="365" y="450" width="90" height="14" rx="6" transform="rotate(10 410 457)"/></g>
+ <circle cx="410" cy="455" r="10" fill="#ff7a2a" opacity=".35" class="glow"/>
+ <rect x="540" y="452" width="30" height="18" fill="#b8402a"/><rect x="543" y="455" width="24" height="5" fill="#f3e6c8"/>
+ <g id="platten">${['#7fc8b8','#e8c46a','#9a5ab8','#c0283a','#a8d0e8','#2a2a2e','#f4a6c8','#8e8e94','#a0643a','#2a3a6a','#e8e2d4','#e07a3a'].map((c,i)=>`<rect x="${452+(i%3)*2}" y="${233-i*2.6}" width="62" height="2.6" fill="${c}"/>`).join('')}</g>
+ <g id="balgOuter" transform="translate(250 430)"><g id="balgG"><path d="M0 0 L40 -16 L40 16Z" fill="#6a4a30"/><ellipse cx="50" cy="0" rx="18" ry="22" fill="#7a5a3a"/><path d="M38 -6 q12 6 24 0 M38 6 q12 -6 24 0" stroke="#5a3a20" stroke-width="2" fill="none"/></g><rect x="66" y="-4" width="26" height="8" fill="#5a3a20"/><g id="balgPuff" fill="#fff" opacity="0"><circle cx="102" cy="-2" r="5"/><circle cx="114" cy="3" r="4"/><circle cx="125" cy="-3" r="3"/></g></g>
+ <g id="fire" style="display:none"><circle id="fireGlowC" cx="410" cy="420" r="90" fill="url(#fireglow)"/>
+  <g id="flames"><path class="flame" d="M410 465 q-40 -30 -14 -90 q6 30 22 34 q2 -40 30 -60 q-6 40 14 70 q8 -12 6 -30 q24 40 -10 76z" fill="#ff8a2a"/>
+  <path class="flame" d="M412 465 q-20 -20 -6 -52 q8 20 16 20 q4 -20 16 -30 q-2 26 6 40 q4 18 -32 22z" fill="#ffd25a"/></g></g>
+</g>
+${vign}`};
+
+SC.treppe={name:'Die Treppe', svg:()=>`
+<rect width="1200" height="700" fill="#2b2030"/>${Array.from({length:14},(_,i)=>`<rect x="${i*90}" y="0" width="45" height="700" fill="#30243a"/>`).join('')}
+<path d="M0 560 L1200 160 L1200 700 L0 700Z" fill="#3a2a22"/>${Array.from({length:20},(_,i)=>`<line x1="${i*60}" y1="${560-i*20}" x2="${i*60}" y2="700" stroke="#2a1d16" stroke-width="3"/>`).join('')}
+<line x1="0" y1="470" x2="1200" y2="70" stroke="#6a4a30" stroke-width="8"/>
+<g class="hs" data-id="bilder">
+ ${frame(80,250,120,140,picJagd())}${frame(250,180,120,140,picGeist())}${frame(410,150,160,130,picSelfie())}
+ <rect x="860" y="40" width="90" height="110" fill="#8a6a2a"/><rect x="868" y="48" width="74" height="94" fill="#5a4a6a"/><circle cx="905" cy="86" r="15" fill="#d8b89a"/><path d="M891 92 q14 9 28 0" stroke="#3a2a1a" stroke-width="4" fill="none"/><path d="M882 142 q23 -32 46 0Z" fill="#2a2030"/>
+</g>
+<g class="hs" data-id="koenigin">${frame(600,60,170,230,picQueen())}</g>
+<g class="hs" data-id="hoch"><rect x="930" y="290" width="140" height="40" rx="8" fill="#5a4030"/><text x="1000" y="317" font-family="Nunito" font-weight="800" font-size="18" fill="#f3e6c8" text-anchor="middle">↑ Flur</text></g>
+<g class="hs" data-id="runter"><rect x="30" y="420" width="150" height="40" rx="8" fill="#5a4030"/><text x="105" y="447" font-family="Nunito" font-weight="800" font-size="18" fill="#f3e6c8" text-anchor="middle">↓ Halle</text></g>
+<rect width="1200" height="700" fill="#05040a" opacity=".25" pointer-events="none"/>${vign}`};
+
+SC.flur={name:'Der Flur', svg:()=>`
+<rect width="1200" height="700" fill="#241a2c"/>
+<rect x="450" y="150" width="300" height="300" fill="#2e2338"/>
+<path d="M0 0 L450 150 L450 450 L0 600Z" fill="#33263a"/><path d="M1200 0 L750 150 L750 450 L1200 600Z" fill="#33263a"/>
+<path d="M0 0 L1200 0 L750 150 L450 150Z" fill="#1c1424"/>
+<path d="M0 600 L450 450 L750 450 L1200 600 L1200 700 L0 700Z" fill="#3a2a22"/><path d="M380 700 L540 450 L660 450 L820 700Z" fill="#6a2a32"/>
+<rect x="545" y="190" width="110" height="130" fill="#1b2550" stroke="#24160e" stroke-width="6"/>${moon(600,240,16)}
+<g class="hs" data-id="schlafzimmer"><path d="M150 530 L150 215 L310 265 L310 485Z" fill="#4a3226" stroke="#24160e" stroke-width="5"/><circle cx="290" cy="380" r="6" fill="#c9a24a"/><path d="M170 250 L290 285 L290 312 L170 280Z" fill="#c9a24a"/><text x="230" y="290" font-family="Nunito" font-weight="800" font-size="15" fill="#2a1a10" text-anchor="middle" transform="rotate(16 230 290)">Schlafzimmer</text></g>
+<g class="hs" data-id="arbeitszimmer"><path d="M1050 530 L1050 215 L890 265 L890 485Z" fill="#4a3226" stroke="#24160e" stroke-width="5"/><circle cx="910" cy="380" r="6" fill="#c9a24a"/><path d="M1030 250 L910 285 L910 312 L1030 280Z" fill="#c9a24a"/><text x="970" y="290" font-family="Nunito" font-weight="800" font-size="15" fill="#2a1a10" text-anchor="middle" transform="rotate(-16 970 290)">Arbeitszimmer</text></g>
+<g class="hs" data-id="treppe"><rect x="520" y="345" width="160" height="105" fill="#120c10"/><line x1="520" y1="350" x2="680" y2="350" stroke="#6a4a30" stroke-width="7"/>${Array.from({length:6},(_,i)=>`<line x1="${530+i*28}" y1="350" x2="${530+i*28}" y2="420" stroke="#6a4a30" stroke-width="4"/>`).join('')}<rect x="545" y="300" width="110" height="34" rx="6" fill="#5a4030"/><text x="600" y="323" font-family="Nunito" font-weight="800" font-size="16" fill="#f3e6c8" text-anchor="middle">Treppe ↓</text></g>
+<rect width="1200" height="700" fill="#05040a" opacity=".2" pointer-events="none"/>${vign}`};
+
+SC.arbeit={name:'Das Arbeitszimmer', svg:()=>`
+<rect width="1200" height="700" fill="#2e2436"/>${Array.from({length:24},(_,i)=>`<rect x="${i*50}" y="0" width="6" height="470" fill="#3a2e44"/>`).join('')}
+<rect y="470" width="1200" height="230" fill="#3a2a22"/><rect y="462" width="1200" height="10" fill="#24160e"/>
+<g class="hs" data-id="fenster"><rect x="70" y="110" width="190" height="230" fill="#141a3c" stroke="#24160e" stroke-width="10"/>${moon(205,150,14)}
+ <rect x="75" y="285" width="180" height="50" fill="#1a2230"/>
+ <g><path d="M104 242 L165 206 L226 242Z" fill="#7a7e88" stroke="#3a3c44" stroke-width="2"/><rect x="112" y="242" width="106" height="84" fill="#8a8e98" stroke="#3a3c44" stroke-width="2"/>
+ <rect x="118" y="252" width="10" height="74" fill="#9a9ea8"/><rect x="202" y="252" width="10" height="74" fill="#9a9ea8"/><path d="M152 326 V292 a13 13 0 0 1 26 0 V326Z" fill="#141218"/>
+ <rect x="126" y="250" width="78" height="16" fill="#b4b8c0"/><text x="165" y="262" font-family="Fraunces" font-weight="800" font-size="10" fill="#2a2c30" text-anchor="middle">Gruft ${SUR()}</text></g>
+ <g stroke="#0c0a12" stroke-width="3">${spikes(80,250,300,335,14)}</g>
+ <line x1="165" y1="110" x2="165" y2="340" stroke="#24160e" stroke-width="6"/><line x1="70" y1="225" x2="260" y2="225" stroke="#24160e" stroke-width="6"/></g>
+<g class="hs" data-id="regal"><rect x="300" y="110" width="190" height="360" fill="#4a3226" stroke="#24160e" stroke-width="6"/>
+ ${[0,1,2,3].map(r=>`<rect x="300" y="${190+r*80}" width="190" height="8" fill="#24160e"/>`+Array.from({length:8},(_,c)=>{const h=46+((r*7+c*5)%24);return `<rect x="${310+c*22}" y="${190+r*80-h}" width="18" height="${h}" fill="${['#6a3a3a','#3a4a6a','#4a5a3a','#6a5a3a','#5a3a5a'][(r+c)%5]}"/>`}).join('')).join('')}</g>
+<g class="hs" data-id="folklore"><rect x="398" y="362" width="21" height="68" fill="#8e8e94" stroke="#55555c" stroke-width="2"/><text transform="translate(412 424) rotate(-90)" font-family="Fraunces" font-style="italic" font-size="11" fill="#f0f0f0">folklore</text></g>
+<g class="hs" data-id="evermore"><rect x="421" y="358" width="22" height="72" fill="#7a5232" stroke="#4a2e18" stroke-width="2"/><text transform="translate(436 425) rotate(-90)" font-family="Fraunces" font-style="italic" font-size="11" fill="#f3e2c8">evermore</text></g>
+<g class="hs" data-id="buch"><rect x="452" y="282" width="22" height="66" fill="#c9a24a" stroke="#7a5a1a" stroke-width="2" transform="rotate(10 463 348)"/><rect x="455" y="296" width="16" height="4" fill="#7a5a1a" transform="rotate(10 463 348)"/><rect x="455" y="330" width="16" height="4" fill="#7a5a1a" transform="rotate(10 463 348)"/><rect x="470" y="300" width="14" height="8" fill="#f3e6c8" transform="rotate(10 463 348)"/></g>
+<g class="hs" data-id="schreibtisch"><rect x="540" y="350" width="280" height="22" fill="#5a3a26"/><rect x="555" y="372" width="20" height="98" fill="#4a2e1e"/><rect x="785" y="372" width="20" height="98" fill="#4a2e1e"/><rect x="600" y="372" width="160" height="60" fill="#4a2e1e"/>
+ <rect x="590" y="330" width="80" height="20" fill="#e8dfc4" transform="rotate(-5 630 340)"/><rect x="640" y="334" width="70" height="16" fill="#d8cfb4" transform="rotate(7 675 342)"/>
+ <rect x="760" y="310" width="14" height="40" fill="#efe7cf"/><path class="flame" d="M767 310 q-7 -10 0 -20 q7 10 0 20z" fill="#ffd25a"/><circle cx="767" cy="300" r="30" fill="url(#fireglow)"/>
+ <path d="M720 345 L745 300" stroke="#f4f0dc" stroke-width="3"/></g>
+<g class="hs" data-id="papierkorb"><path d="M850 400 L920 400 L910 470 L860 470Z" fill="#6a5a4a" stroke="#3a2a1a" stroke-width="3"/><circle cx="872" cy="398" r="11" fill="#e8dfc4"/><circle cx="893" cy="394" r="9" fill="#d8cfb4"/></g>
+<g class="hs" data-id="safe"><rect x="960" y="260" width="160" height="150" rx="8" fill="#5a5e66" stroke="#2a2c30" stroke-width="5"/><rect x="975" y="275" width="130" height="120" rx="6" fill="#6a6e76"/>
+ <circle cx="1040" cy="335" r="28" fill="#8a8e96" stroke="#3a3c40" stroke-width="4"/>${Array.from({length:10},(_,i)=>{const a=i*Math.PI/5;return `<line x1="${1040+Math.cos(a)*20}" y1="${335+Math.sin(a)*20}" x2="${1040+Math.cos(a)*26}" y2="${335+Math.sin(a)*26}" stroke="#2a2c30" stroke-width="2"/>`}).join('')}<line x1="1040" y1="335" x2="1040" y2="314" stroke="#2a2c30" stroke-width="4"/>
+ <rect x="975" y="410" width="12" height="60" fill="#3a3c40"/><rect x="1093" y="410" width="12" height="60" fill="#3a3c40"/>
+ <g id="safeOpen" style="display:none"><rect x="975" y="275" width="130" height="120" fill="#141218"/><rect x="1105" y="275" width="30" height="120" fill="#6a6e76" transform="skewY(-20)" transform-origin="1105 275"/></g></g>
+<g class="hs" data-id="tuer"><rect x="1140" y="250" width="60" height="220" fill="#4a3226" stroke="#24160e" stroke-width="5"/><circle cx="1152" cy="370" r="5" fill="#c9a24a"/></g>
+<rect width="1200" height="700" fill="#05040a" opacity=".22" pointer-events="none"/>${vign}`};
+
+SC.garten={name:'Der Garten', svg:()=>`
+<rect width="1200" height="700" fill="url(#night)"/>${stars(50,250)}${moon(160,90,34)}
+<path d="M0 330 Q300 300 600 320 T1200 300 L1200 700 L0 700Z" fill="#141c2a"/>
+<g transform="translate(1040 300)"><rect x="-3" y="-30" width="6" height="30" fill="#2a1e18"/><circle cx="0" cy="-40" r="20" fill="#1e3020"/><circle cx="-6" cy="-44" r="3.5" fill="#d9393f"/></g>
+<rect y="380" width="1200" height="320" fill="#18212c"/>
+${fence(0,1200,345,420,[960,1150])}
+<g class="hs" data-id="zaun"><g stroke="#2a2836" stroke-width="6">${spikes(970,1145,345,420,22)}<line x1="960" y1="357" x2="1150" y2="357"/><line x1="960" y1="410" x2="1150" y2="410"/></g></g>
+<g class="hs" data-id="vorgarten"><path d="M0 120 L120 140 L120 420 L0 430Z" fill="#221a2c"/><path d="M0 120 L120 140 L60 60 L0 60Z" fill="#1c1626"/><rect x="40" y="200" width="40" height="50" fill="#f3cf6b" opacity=".2"/><path d="M120 430 Q200 450 260 500 L200 520 Q140 470 60 460Z" fill="#2e3a44"/></g>
+<g class="hs" data-id="brunnen"><ellipse cx="260" cy="440" rx="70" ry="20" fill="#4a4e58"/><rect x="190" y="395" width="140" height="45" fill="#5a5e68"/><ellipse cx="260" cy="395" rx="70" ry="18" fill="#141820"/><rect x="200" y="300" width="10" height="95" fill="#3a2a20"/><rect x="310" y="300" width="10" height="95" fill="#3a2a20"/><path d="M180 305 L260 260 L340 305Z" fill="#3a2a2a"/></g>
+<g class="hs" data-id="gruft" id="gruftG"><rect x="470" y="230" width="260" height="190" fill="#6a6e78" stroke="#3a3c44" stroke-width="5"/><path d="M450 235 L600 150 L750 235Z" fill="#5a5e68" stroke="#3a3c44" stroke-width="5"/>
+ <rect x="485" y="240" width="22" height="180" fill="#7a7e88"/><rect x="693" y="240" width="22" height="180" fill="#7a7e88"/>
+ <path d="M560 420 V320 a40 40 0 0 1 80 0 V420Z" fill="#141218"/>
+ <g id="gruftDoor"><path d="M560 420 V320 a40 40 0 0 1 80 0 V420Z" fill="#4a4e58" stroke="#2a2c30" stroke-width="3"/><line x1="600" y1="282" x2="600" y2="420" stroke="#2a2c30" stroke-width="3"/><circle cx="592" cy="372" r="4" fill="#8a7a4a"/><circle cx="608" cy="372" r="4" fill="#8a7a4a"/>
+  <path id="gruftSpalt" style="display:none" d="M597 290 L603 290 L604 420 L596 420Z" fill="#0a080e"/></g>
+ <rect x="530" y="250" width="140" height="34" rx="3" fill="#8a8e96"/>
+ <text x="600" y="273" font-family="Fraunces" font-weight="800" font-size="16" fill="#2a2c30" text-anchor="middle">${N()}</text>
+ <path d="M600 165 v24 M590 175 h20" stroke="#2a2c30" stroke-width="4"/>
+ <rect x="545" y="430" width="110" height="12" rx="3" fill="#8a8e96" stroke="#3a3c44" stroke-width="2"/><rect x="555" y="442" width="10" height="20" fill="#6a6e78"/><rect x="635" y="442" width="10" height="20" fill="#6a6e78"/>
+ <g id="benchApple" style="display:none"><circle cx="600" cy="420" r="11" fill="#d9393f"/><path d="M593 416 q4 7 1 12 M600 412 q3 9 1 16" stroke="#f3cf6b" stroke-width="2" fill="none"/><line x1="600" y1="409" x2="602" y2="402" stroke="#5a3a20" stroke-width="2.5"/></g></g>
+<g id="beckFall" style="display:none" transform="translate(600 300) scale(.62)"><g class="falling" style="transform-box:fill-box;transform-origin:50% 50%">${beckBody()}</g></g>
+<g class="hs" data-id="vogelscheuche"><rect x="887" y="300" width="8" height="140" fill="#3a2a20"/><rect x="840" y="335" width="100" height="8" fill="#3a2a20"/><path d="M855 335 L925 335 L915 410 L865 410Z" fill="#3a3044"/><circle cx="891" cy="310" r="20" fill="#c9b07a"/><rect x="872" y="250" width="38" height="45" fill="#14121c"/><rect x="862" y="290" width="58" height="8" fill="#14121c"/><path d="M882 308 l6 4 M896 312 l6 -4" stroke="#14121c" stroke-width="3"/></g>
+${vign}`};
+
+SC.pfad={name:'Über die Wiese', svg:()=>`
+<rect width="1200" height="700" fill="url(#night)"/>${stars(50,250)}${moon(1050,90,30)}
+<path d="M0 320 Q300 290 600 310 T1200 300 L1200 700 L0 700Z" fill="#162030"/>
+<path d="M520 700 Q560 500 760 360 Q820 320 880 300 L895 302 Q840 330 790 370 Q620 500 700 700Z" fill="#3a3640"/>
+<g transform="translate(890 296)"><rect x="-3" y="-28" width="6" height="28" fill="#2a1e18"/><circle cx="0" cy="-38" r="18" fill="#1e3020"/><circle cx="-5" cy="-40" r="10" fill="url(#appleglow)" class="glow"/><circle cx="-5" cy="-40" r="3" fill="#d9393f"/></g>
+${Array.from({length:30},(_,i)=>`<path d="M${(i*137)%1200} ${470+(i*53)%220} q4 -18 8 0 q4 -14 8 0" stroke="#22303a" stroke-width="3" fill="none"/>`).join('')}
+${ghost(250,250,1.3,0)}${ghost(950,200,1,-1.5)}${ghost(450,380,.9,-3)}${ghost(1080,420,1.1,-2.2)}${ghost(150,430,.8,-4)}
+${vign}`};
+
+SC.rueckweg={name:'Zurück zum Garten', svg:()=>`
+<rect width="1200" height="700" fill="url(#night)"/>${stars(50,250)}${moon(160,90,30)}
+<path d="M0 330 Q300 300 600 316 T1200 305 L1200 700 L0 700Z" fill="#162030"/>
+<g transform="translate(600 318) scale(.38)">
+ <path d="M-700 -20 L-500 -20 L-500 -300 L-380 -380 L-260 -300 L-260 -20Z" fill="#1c1626"/><rect x="-430" y="-220" width="40" height="50" fill="#f3cf6b" opacity=".3"/>
+ <rect x="-120" y="-170" width="240" height="170" fill="#6a6e78"/><path d="M-140 -165 L0 -250 L140 -165Z" fill="#5a5e68"/><path d="M-36 0 V-80 a36 36 0 0 1 72 0 V0Z" fill="#141218"/>
+ <g stroke="#14121c" stroke-width="12">${Array.from({length:40},(_,i)=>`<line x1="${-780+i*40}" y1="-60" x2="${-780+i*40}" y2="40"/><path d="M${-790+i*40} -56 L${-780+i*40} -86 L${-770+i*40} -56Z" fill="#14121c"/>`).join('')}<line x1="-800" y1="-40" x2="800" y2="-40"/></g>
+</g>
+<path d="M480 700 Q520 520 590 360 Q600 335 612 330 L622 332 Q614 345 610 365 Q580 520 700 700Z" fill="#3a3640"/>
+${Array.from({length:30},(_,i)=>`<path d="M${(i*137)%1200} ${470+(i*53)%220} q4 -18 8 0 q4 -14 8 0" stroke="#22303a" stroke-width="3" fill="none"/>`).join('')}
+${ghost(220,230,1.2,-.5)}${ghost(900,260,1.1,-2)}${ghost(420,400,.9,-3.5)}${ghost(1060,420,1.2,-1)}${ghost(760,180,.8,-4.5)}${ghost(120,450,.9,-2.8)}
+${vign}`};
+
+SC.baum={name:'Der Apfelbaum', svg:()=>`
+<rect width="1200" height="700" fill="url(#night)"/>${stars(60,260)}${moon(180,100,34)}
+<path d="M0 470 Q600 380 1200 470 L1200 700 L0 700Z" fill="#162030"/>
+<g class="hs" data-id="baum" id="treeG">
+ <path d="M585 470 Q575 380 590 300 L612 300 Q628 380 620 470Z" fill="#3a2a20"/><path d="M598 330 Q540 290 520 250 M606 320 Q660 280 690 240" stroke="#3a2a20" stroke-width="14" fill="none" stroke-linecap="round"/>
+ <circle cx="600" cy="210" r="95" fill="#1c2e1e"/><circle cx="520" cy="240" r="60" fill="#203422"/><circle cx="690" cy="235" r="62" fill="#1a2c1c"/><circle cx="610" cy="150" r="60" fill="#22381f"/>
+ <g id="apple"><circle cx="650" cy="190" r="40" fill="url(#appleglow)" class="glow"/><circle cx="650" cy="192" r="16" fill="#d9393f"/><path d="M640 186 q6 10 2 18 M650 180 q4 12 1 24 M658 184 q3 9 0 18" stroke="#f3cf6b" stroke-width="2.5" fill="none" opacity=".85"/><line x1="650" y1="176" x2="653" y2="166" stroke="#5a3a20" stroke-width="3"/><path d="M653 170 q10 -8 16 -2 q-8 6 -16 2z" fill="#5a8a3a"/></g>
+</g>
+${ghost(980,240,.8,-2)}<g id="baumGeister" style="display:none">${ghost(420,250,1,-1)}${ghost(790,215,.9,-2.6)}${ghost(470,410,.8,-3.3)}${ghost(760,390,.95,-.6)}</g>${vign}`};
+
+const LABELS={tor:'Gartentor',briefkasten:'Briefkasten',tuer:'Tür',garten:'In den Garten (hinterm Haus)',
+  kamin:'Kamin',schrank:'Schrank',uhr:'Standuhr',treppe:'Treppe',haustuer:'Haustür (raus in den Vorgarten)',
+  koenigin:'Bild mit der Krone',bilder:'Die anderen Bilder',hoch:'Hoch in den Flur',runter:'Runter in die Halle',
+  schlafzimmer:'Schlafzimmer',arbeitszimmer:'Arbeitszimmer',
+  fenster:'Fenster',regal:'Bücherregal',buch:'Goldenes Buch',folklore:'Graues Buch „Folklore“',evermore:'Braunes Buch „Evermore“',schreibtisch:'Schreibtisch',papierkorb:'Papierkorb',safe:'Safe',
+  gruft:'Gruft',brunnen:'Brunnen',vogelscheuche:'Vogelscheuche',zaun:'Zaun (Richtung Baum)',vorgarten:'Zurück in den Vorgarten',baum:'Apfelbaum'};
+const VIS={
+  weg:()=>[], cafe:()=>[], pfad:()=>[], rueckweg:()=>[], heim:()=>[],
+  vorgarten:()=>F.tor?['briefkasten','tuer','garten']:['tor'],
+  halle:()=>['kamin','schrank','uhr','treppe','haustuer'],
+  treppe:()=>['koenigin','bilder','hoch','runter'],
+  flur:()=>['schlafzimmer','arbeitszimmer','treppe'],
+  arbeit:()=>['schreibtisch','regal','buch','folklore','evermore','papierkorb','safe','fenster','tuer'],
+  garten:()=>['gruft','brunnen','vogelscheuche','zaun','vorgarten'],
+  baum:()=>F.apfel?[]:['baum']};
+// Szenen-Name für tuer je nach Raum
+const roomLabel=id=> (id==='tuer'&&st.scene==='vorgarten')?'Haustür' : (id==='tuer'&&st.scene==='arbeit')?'Tür zum Flur' : LABELS[id];
+
+function enterScene(id){
+  st.scene=id; const S=SC[id];
+  $('scene').innerHTML=DEFS+S.svg(); $('roomName').textContent=S.name;
+  document.querySelectorAll('.hs').forEach(el=>el.addEventListener('click',()=>tryPick(el.dataset.id)));
+  applyState(); pushUI();
+}
+function refreshOrder(){ st.order=(VIS[st.scene]||(()=>[]))(); }
+function applyState(){
+  const show=(id,v)=>{ const e=$(id); if(e) e.style.display=v?'':'none'; };
+  if(st.scene==='halle'){ const d=$('hallDark'); d&&d.setAttribute('opacity', F.hell? .06 : F.feuer? .45 : .8);
+    show('fire',F.feuer); const k=$('kaminG'); if(k) k.style.opacity= F.feuer? 1 : .62;
+    const fl=$('flames'); if(fl) fl.setAttribute('transform', F.hell? 'translate(410 465) scale(1.25) translate(-410 -465)':'translate(410 465) scale(.6) translate(-410 -465)');
+    const g=$('fireGlowC'); if(g) g.setAttribute('r', F.hell?220:90); }
+  if(st.scene==='halle') show('schal',F.schal);
+  if(st.scene==='arbeit') show('safeOpen',F.testament);
+  if(st.scene==='baum'){ show('apple',!F.apfel); show('baumGeister',F.geister); }
+  if(st.scene==='garten'){ show('benchApple',F.apfelGelegt); show('gruftSpalt',F.spalt&&!F.gruftOffen); show('gruftDoor',!F.gruftOffen); show('beckFall',F.gruftOffen); }
+  refreshOrder(); updateMusic();
+}
+
+/* ---------- Notizen & Texte ---------- */
+function note(t){ if(!st.notes.includes(t)) st.notes.push(t); pushUI(); }
+let textQueue=[], textDone=null, textT=0, textMin=0;
+function say(title, lines, then){ textQueue=Array.isArray(lines)?lines.slice():[lines]; textDone=then||null; st.mode='text'; nextText(title); }
+function nextText(title){ const t=textQueue.shift(); if(title!==undefined) $('boxTitle').textContent=title;
+  $('boxText').innerHTML=t; textT=0; textMin=Math.max(3.5,t.replace(/<[^>]+>/g,'').length/16);
+  $('boxUi').innerHTML= st.pre ? `<div class="barlbl"><span>weiter: klicken</span><span>${st.phone?'oder „Weiter“ am Handy':''}</span></div>`
+    : `<div class="bar"><i id="tb"></i></div><div class="barlbl"><span>weiter: treten (oder klicken)</span><span>${st.phone?'oder „Weiter“ am Handy':''}</span></div>`;
+  legend(); pushUI(); }
+function finishText(){ if(textQueue.length) nextText(); else { const f=textDone; textDone=null; f? f(): explore(); } }
+/* ---------- Zufallsereignis: Nägel feilen ---------- */
+const NAIL_AT = 3 + Math.floor(Math.random()*16);   // nach so vielen Umseh-Runden im Haus
+let nailCount=0, nailPhase=0;
+function handSvg(){ const SK='#f0cbb0', NL='#f4a6b8', TIP='#fff2f4';
+  const fingers=[[-66,-40,26,118,-8],[-30,-62,27,142,-3],[8,-66,27,148,2],[44,-52,25,128,7]];
+  return `<svg viewBox="-220 -230 440 420" width="100%" height="100%">
+  <path d="M-120 200 L-90 40 Q-80 -10 -40 -20 L70 -14 Q110 -6 112 40 L100 200Z" fill="${SK}"/>
+  <path d="M-120 200 L-95 120 L100 120 L100 200Z" fill="#e8b7d0"/><path d="M-118 128 h216" stroke="#d48aaf" stroke-width="6"/>
+  ${fingers.map(([x,y,w,h,r])=>`<g transform="rotate(${r} ${x} ${y+h})"><rect x="${x-w/2}" y="${y}" width="${w}" height="${h}" rx="${w/2}" fill="${SK}"/>
+   <rect x="${x-w/2+4}" y="${y+4}" width="${w-8}" height="${w+6}" rx="${(w-8)/2}" fill="${NL}"/><rect x="${x-w/2+4}" y="${y+4}" width="${w-8}" height="8" rx="4" fill="${TIP}"/>
+   <path d="M${x-w/2+5} ${y+h*.55} h${w-10} M${x-w/2+5} ${y+h*.75} h${w-10}" stroke="#d8a88e" stroke-width="2"/></g>`).join('')}
+  <g transform="rotate(-38 -96 60)"><rect x="-118" y="-20" width="30" height="96" rx="15" fill="${SK}"/><rect x="-114" y="-16" width="22" height="30" rx="11" fill="${NL}"/><rect x="-114" y="-16" width="22" height="7" rx="3.5" fill="${TIP}"/></g>
+  <g id="nailFile"><g transform="rotate(-8)"><rect x="-150" y="-86" width="300" height="22" rx="11" fill="#c9b8d8" stroke="#8a78a0" stroke-width="3"/>
+   ${Array.from({length:22},(_,i)=>`<line x1="${-130+i*11}" y1="-82" x2="${-136+i*11}" y2="-68" stroke="#a090b8" stroke-width="2"/>`).join('')}
+   <rect x="150" y="-90" width="70" height="30" rx="10" fill="#e46aa0"/></g></g>
+  <g fill="#fff" opacity=".8" id="nailDust">${Array.from({length:10},(_,i)=>`<circle cx="${-80+i*18}" cy="${-56+(i%3)*8}" r="2.5"/>`).join('')}</g></svg>`; }
+function nailEvent(then){ F.nails=true; $('nails').innerHTML=handSvg(); $('nails').style.display='block'; sfx('nope'); buzz(); flash('Huch!');
+  say('💅 Huch!',['Huch – ich habe ja ganz vergessen, meine Nägel zu feilen!','Das geht so nicht weiter. Schnell die Feile her!'],()=>hold('feilen','💅 Nägel feilen','Feilen, feilen, feilen – je kräftiger du trittst, desto schneller!',()=>{
+    $('nails').style.display='none'; sfx('win'); flash('💅 Perfekt!');
+    say('💅 Perfekt','Schön glatt und gefeilt. So kann es weitergehen!',then); },{nails:true})); }
+function explore(){
+  if(F.tuerAuf && !F.nails && !F.apfelGelegt && st.scene!=='vorgarten' && ++nailCount>=NAIL_AT) return nailEvent(explore);
+  st.mode='explore'; refreshOrder(); $('boxUi').innerHTML=''; $('boxTitle').textContent='🔎 '+SC[st.scene].name; legend(); updateExplore(); pushUI(); }
+function updateExplore(){ $('boxText').innerHTML= pedaling()||live.src==='sim' ? 'Wähle am Handy oder per Mausklick, was du dir ansehen willst.' : 'Erst treten!'; }
+let act=null;
+function startHold(o){ st.mode='hold'; act={...o,opts:o,prog:0};
+  $('boxTitle').textContent=o.title; $('boxText').innerHTML=o.text;
+  $('boxUi').innerHTML=`<div class="bar"><i id="hb"></i></div><div class="barlbl"><span id="hl1"></span><span id="hl2"></span></div>`; legend(); pushUI(); }
+const hold=(key,title,text,onDone,extra={})=>startHold({title,text,target:W(LOAD[key].f),secs:LOAD[key].s,fast:!!LOAD[key].fast,onDone,...extra});
+function startLock(code,onDone){ st.mode='lock'; act={code,got:[],onDone};
+  $('boxTitle').textContent='🔒 Zahlenschloss'; $('boxText').innerHTML='Gib den Code am Handy ein – oder klicke die Ziffern.'; renderLock(); legend(); pushUI(); }
+function renderLock(){ const d=act.code.length;
+  $('boxUi').innerHTML=`<div class="digits">${Array.from({length:d},(_,i)=>`<div class="dg ${i<act.got.length?'ok':i===act.got.length?'cur':''}">${i<act.got.length?act.got[i]:'·'}</div>`).join('')}</div>
+  <div class="pad">${[1,2,3,4,5,6,7,8,9,0].map(n=>`<button data-d="${n}">${n}</button>`).join('')}<button data-x="1" style="width:auto;padding:8px 12px">Abbrechen</button></div>`; }
+function lockDigit(d){ if(st.mode!=='lock'||!act) return; act.got.push(d); sfx('tick');
+  if(act.got.length===act.code.length){ const ok=act.got.join('')===act.code.join(''), f=act.onDone; act=null; f(ok); } else { renderLock(); pushUI(); } }
+function cancelLock(){ if(st.mode!=='lock') return; act=null; say('','Du lässt das Schloss erst mal in Ruhe.',explore); }
+function startChoice(q,opts,cbs){ st.mode='choice'; act={opts,cbs};
+  $('boxTitle').textContent='❓ Entscheidung'; $('boxText').innerHTML=q;
+  $('boxUi').innerHTML=`<div class="choices">${opts.map((o,i)=>`<div class="choice" data-i="${i}">${o}</div>`).join('')}</div>`;
+  $('boxUi').querySelectorAll('.choice').forEach(el=>el.onclick=()=>pickChoice(+el.dataset.i)); legend(); pushUI(); }
+function pickChoice(i){ if(st.mode!=='choice'||!act) return; const f=act.cbs[i]; act=null; f(); }
+let docThen=null, docT=0, docMin=25, docPhone=null; const DOC_MIN=25;
+function showDoc(html,then,o={}){ st.mode='doc'; docThen=then; docT=0; docMin=o.min||DOC_MIN; docPhone=o.phone||{title:'📜 Testament',text:'Lies das Testament auf dem großen Bildschirm.'};
+  $('docPaper').className=o.cls||''; $('boxUi').innerHTML=''; $('docBody').innerHTML=html; $('doc').style.display='flex'; legend(); pushUI(); }
+function closeDoc(){ if(st.mode!=='doc') return; $('doc').style.display='none'; const f=docThen; docThen=null; f(); }
+function rest(secs,text,then){ st.mode='rest'; act={secs,t:0,then}; $('boxTitle').textContent='☕ Pause'; $('boxText').innerHTML=text;
+  $('boxUi').innerHTML=`<div class="bar"><i id="rb"></i></div><div class="barlbl"><span>locker treten</span><span id="rl"></span></div>`; legend(); pushUI(); }
+function legend(){ const L=$('legend'), m=st.mode; L.style.bottom=Math.max(180,$('box').offsetHeight+28)+'px';
+  L.innerHTML = m==='explore'? '<b>Am Handy tippen</b> oder <b>klicken</b> zum Untersuchen · dabei im <b>Basis-Tempo</b> treten'
+   : m==='hold'? '<b>Watt halten</b>, bis der Balken voll ist · kurz drunter ist okay · <b>3 s Pause</b> = kurze Unterbrechung, danach geht es neu los'
+   : m==='lock'? '<b>Code am Handy</b> eintippen oder Ziffern klicken'
+   : m==='choice'? '<b>Am Handy</b> oder per <b>Klick</b> wählen'
+   : m==='sort'? '<b>Am Handy</b> oder per <b>Klick</b> die Platten der Reihe nach antippen · locker weitertreten'
+   : m==='doc'||m==='close'? '<b>In Ruhe lesen</b> · weiter mit Klick oder „Weiter“ am Handy'
+   : m==='gift'? '<b>Geschenk öffnen</b> – per Klick oder am Handy'
+   : m==='text'&&st.pre? '<b>Weiter</b> per Klick oder „Weiter“ am Handy · getreten wird erst ab dem Dorf'
+   : m==='calib'? '<b>Basis-Tempo</b> fahren – angenehm zügig, du könntest dich noch unterhalten'
+   : '<b>Weitertreten</b> – der Text läuft weiter · oder klicken'; }
+
+/* ---------- Spielablauf ---------- */
+function tryPick(id){
+  if(st.mode!=='explore' || !st.order.includes(id)) return;
+  if(!pedaling() && live.src!=='sim'){ flash('Erst treten!'); return; }
+  examine(id);
+}
+function goStairs(dir){ // dir: 'up' | 'down'
+  enterScene('treppe');
+  if(!F.oben) return hold('treppe','🪜 Treppe hoch','Treppensteigen ist anstrengend … Stufe für Stufe, eine Minute lang. An der Wand hängen lauter alte Bilder.',()=>{
+    F.oben=true; say('🪜 Treppe',['Auf halber Höhe fällt dir ein Bild besonders auf: eine Frau in prunkvollen Kleidern – mit einer Krone auf dem Kopf.','Oben angekommen. Vor dir liegt ein langer, dunkler Flur.'],()=>{ enterScene('flur'); explore(); }); });
+  hold('stufen', dir==='up'?'🪜 Treppe hoch':'🪜 Treppe runter','Die Stufen knarzen. Dranbleiben!',()=>say('🪜 Treppe','Du bleibst kurz auf der Treppe stehen. Die Bilder an der Wand starren dich an.',explore));
+}
+function enterHalle(){ enterScene('halle');
+  if(!F.halleSeen){ F.halleSeen=true; return say('🕯 Eingangshalle',['Stockdunkel. Nur durchs Fenster fällt ein wenig Mondlicht.','Du erkennst ein paar Umrisse, aber nichts Genaues. Nur der Kamin hebt sich etwas ab.'],explore); }
+  explore(); }
+function examine(id){
+  sfx('pop');
+  if(st.scene==='halle' && !F.hell && !['kamin','haustuer'].includes(id)) return say('🌑 Zu dunkel','Du siehst zu wenig. Erst mal Licht machen!',explore);
+  switch(st.scene+':'+id){
+  /* Vorgarten */
+  case 'vorgarten:tor':
+    if(F.tor) return say('Gartentor','Das Tor bleibt verriegelt. Du bist ja schon drin.',explore);
+    return say('Gartentor',['Das Tor ist verriegelt und völlig verrostet.','Du musst wohl über den Zaun springen. Das könnte kurz anstrengend werden …'],()=>hold('zaun','🤸 Über den Zaun','Rauf und rüber – 40 Sekunden!',()=>{
+      F.tor=true; applyState(); sfx('land'); say('🌿 Vorgarten','Du landest im feuchten Gras. Vor dir: ein alter Briefkasten und die Haustür.',explore); }));
+  case 'vorgarten:briefkasten':
+    if(F.schluessel&&F.brief) return say('📮 Briefkasten','Der Briefkasten ist leer.',explore);
+    if(F.schluessel) return say('📮 Briefkasten','Im Briefkasten liegt noch der nasse Brief.',briefChoice);
+    F.schluessel=true; note('Schlüssel aus dem Briefkasten'); flash('🗝 Ein Schlüssel!'); buzz();
+    return say('📮 Briefkasten',['Der Briefkasten quietscht laut. Darin liegt ein alter Schlüssel!','Der passt bestimmt in die Haustür.','Darunter klebt noch ein Brief, völlig durchweicht vom Regen.'],briefChoice);
+  case 'vorgarten:tuer':
+    if(F.tuerAuf) return enterHalle();
+    if(!F.schluessel) return say('🚪 Haustür',['Verschlossen. Die aufzubrechen wäre ganz schön anstrengend …','Willst du nicht erst mal nach einem Schlüssel schauen?'],explore);
+    return say('🚪 Haustür','Du steckst den Schlüssel ins Schloss … er passt nicht! Na toll.',()=>startChoice('Und jetzt?',['🏠 Heimgehen','💥 Tür aufbrechen'],[
+      ()=>say('🏠 Heimweg','Du drehst um und gehst nach Hause. Vielleicht ein andermal …',()=>location.reload()),
+      ()=>hold('tuer','💥 Tür aufbrechen','Wirf dich immer wieder dagegen – eine Minute lang!',()=>{ F.tuerAuf=true; sfx('door'); buzz(); flash('KRACH!');
+        say('🚪 Haustür','KRACH! Die Tür gibt nach und knallt nach innen auf.',enterHalle); }) ]));
+  case 'vorgarten:garten':
+    if(!F.garten) return say('🌲 Garten','Hinter dem Haus ist es stockdunkel. Was willst du da?',explore);
+    enterScene('garten');
+    if(!F.gartenSeen){ F.gartenSeen=true; return say('🪦 Garten',['Du schleichst ums Haus. Dahinter liegt ein verwilderter Garten, auch er von einem Zaun mit Spitzen umgeben.','Mittendrin: eine steinerne Gruft.'],explore); }
+    return explore();
+  /* Eingangshalle */
+  case 'halle:haustuer': enterScene('vorgarten'); return explore();
+  case 'halle:kamin':
+    if(F.hell) return say('🔥 Kamin','Das Feuer knistert gemütlich.',explore);
+    const balg=()=>say('🔥 Kamin','Das könnte noch etwas Sauerstoff vertragen.',()=>hold('balg','💨 Blasebalg','Eine Minute gleichmäßig fächern, bis das Feuer schön brennt.',()=>{
+      $('balgOuter')&&$('balgOuter').setAttribute('transform','translate(250 430)');
+      F.hell=true; applyState(); sfx('whoosh'); buzz(); flash('Licht!');
+      say('🔥 Eingangshalle',['Da nenn ich ein Feuer! Es lodert hell und gleichmäßig. Endlich siehst du etwas!','Ein großer Schrank, eine Standuhr – und eine Treppe nach oben.'],explore); },{balg:true}));
+    const platten=()=>say('🔥 Kamin',['Es brennt! Aber nur ein kleines, flackerndes Feuer.','Du hältst die Hände ans Feuer und wärmst dich auf.','Im Schein der Flammen entdeckst du auf dem Kaminsims einen Stapel alter Schallplatten – zwölf Stück, völlig durcheinander.','So eine Sammlung gehört doch ordentlich sortiert …'],()=>startSort(()=>{ F.platten=true;
+      say('🎶 Schallplatten',['Perfekt sortiert! Von „Taylor Swift“ bis „The Life of a Showgirl“ – alle zwölf in der richtigen Reihenfolge.',`Seltsam, dass jemand wie ${N()} so etwas hört …`],
+        ()=>hold('pauseKamin','☕ Kurz aufwärmen','Das Feuer kommt langsam in Gang. Ganz locker weitertreten.',balg)); }));
+    if(F.feuer) return F.platten? balg() : platten();
+    return say('🔥 Kamin',['Im Kamin liegt etwas Holz. Daneben: Zündhölzer und ein alter Blasebalg.','Mal sehen, ob das noch brennt …'],()=>hold('feuer','🔥 Feuer entzünden','30 Sekunden kräftig, bis die Flamme richtig greift!',()=>{ F.feuer=true; applyState(); sfx('whoosh'); platten(); }));
+  case 'halle:schrank': return say('🚪 Schrank','Alte Mäntel, ein Zylinder und eine Kiste mit Kerzenstummeln. Es riecht nach Mottenkugeln.',()=>{ F.schal=true; applyState();
+    say('🚪 Schrank','Zwischen den Mänteln hängt ein roter Schal. Den hat wohl jemand vor langer Zeit hier vergessen …',explore); });
+  case 'halle:uhr': return say('🕰 Standuhr',['Die Standuhr ist um Mitternacht stehen geblieben …','Plötzlich schlägt sie – dreizehn Mal.'],explore);
+  case 'halle:treppe': return goStairs('up');
+  /* Treppe */
+  case 'treppe:koenigin':
+    if(F.testament){ note('Bild an der Treppe: nur eine gemalte Königin'); return say('👑 Bild',['Eine Königin! Ob die gemeint ist?','… Nein. Die ist nur gemalt. Die holt niemanden zurück.'],explore); }
+    return say('👑 Bild','Eine Frau in prunkvollen Kleidern, mit Krone. Wer das wohl ist?',explore);
+  case 'treppe:bilder': return say('🖼 Bilder',[`Lauter Bilder vom Hausherrn: ${N()} beim Jagen, ${N()} beim Geisterbeschwören …`,'… und ein Urlaubsfoto an einer Bucht, zusammen mit einer Frau mit Kappe. Daneben ein grimmiger Ahne.'],explore);
+  case 'treppe:hoch': enterScene('flur'); return explore();
+  case 'treppe:runter': enterHalle(); return;
+  /* Flur */
+  case 'flur:schlafzimmer': return say('🛏 Schlafzimmer','He, he! Das sind die Privatgemächer. Das geht dich gar nichts an!',explore);
+  case 'flur:arbeitszimmer': enterScene('arbeit');
+    if(!F.arbeitSeen){ F.arbeitSeen=true; return say('📚 Arbeitszimmer','Ein vollgestopftes Arbeitszimmer. Bücher, Papiere – und in der Ecke ein schwerer Safe.',explore); }
+    return explore();
+  case 'flur:treppe': return goStairs('down');
+  /* Arbeitszimmer */
+  case 'arbeit:schreibtisch': return say('🖋 Schreibtisch','Stapel von Notizen über Geisterbeschwörungen. Ein Satz ist dick unterstrichen: <i>„Wer suchet, der findet.“</i>',explore);
+  case 'arbeit:regal': return say('📚 Bücherregal',['Titel wie <i>„Geister für Anfänger“</i> und <i>„Spuk im Eigenheim“</i>. Sehr seriös.','Ein altes goldenes Buch steht ein Stück hervor …'],explore);
+  case 'arbeit:buch':
+    if(!F.raetsel){ F.raetsel=true; note('Zettel im goldenen Buch: Ziffernrätsel (vier Ziffern)'); secret('📖 Zettel im Buch:<br>'+RIDDLE); buzz(); }
+    return say('📖 Goldenes Buch',['Ein dickes, goldenes Buch: <i>„Zahlen des Jenseits“</i>. Zwischen den Seiten steckt ein Zettel:',RIDDLE],explore);
+  case 'arbeit:folklore': return say('📓 Folklore',['<i>„Folklore – Volkssagen vom Hügel“</i>. Ein graues, abgegriffenes Buch voller alter Geschichten aus dem Dorf: von Lichtern im Moor, flüsternden Bäumen und Toten, die nachts durch den Garten wandeln.','Ein Kapitel ist mit einem Eselsohr markiert: <i>„Wie man Geister ruft – und wie man sie wieder loswird.“</i>'],explore);
+  case 'arbeit:evermore': return say('📙 Evermore',[`<i>„Evermore – Vom ewigen Leben“</i>. Ein braunes, schweres Buch, gleich neben dem grauen. Am Rand stehen überall Notizen in krakeliger Handschrift, offenbar von ${N()} selbst.`,'Ein Satz ist dreimal unterstrichen: <i>„Der Tod ist nur ein langer Schlaf – für den, der die richtige Königin findet.“</i>'],explore);
+  case 'arbeit:papierkorb':
+    if(F.zettel) return say('🗑 Papierkorb','Nur noch Müll und ein Apfelgrutzen.',explore);
+    if(!F.raetsel) return say('🗑 Papierkorb','Nur Müll: zerknülltes Papier, Staub und ein alter Apfelgrutzen.',explore);
+    F.zettel=true; note('Zettel im Papierkorb: „Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“'); secret('📝 Zettel aus dem Papierkorb:<br><b>„Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“</b>'); buzz();
+    return say('🗑 Papierkorb',['Huch – da hast du vorhin wohl nicht genau hingeschaut! Ganz unten im Papierkorb liegt noch ein Zettel.','Darauf steht: <i>„Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“</i>'],explore);
+  case 'arbeit:safe':
+    if(F.testament) return say('🔓 Safe','Der Safe ist offen und leer.',explore);
+    return say('🔒 Safe','Ein schwerer Safe mit Zahlenschloss. Vier Ziffern.',()=>{ const tryCode=()=>startLock([1,9,8,9],ok=>{
+      if(!ok){ sfx('nope'); return say('🔒 Safe','Falsch! Der Safe bleibt zu. Versuch es nochmal.',tryCode); }
+      F.testament=true; applyState(); sfx('unlock'); buzz(); flash('Klick!');
+      say('🔓 Safe','Klick! Die Tür schwingt auf. Darin liegt ein vergilbtes Schriftstück …',()=>showDoc(testament(),afterTestament)); }); tryCode(); });
+  case 'arbeit:fenster':
+    if(F.garten) return say('🪟 Fenster','Im Mondlicht siehst du die Gruft im Garten hinter dem Haus.',explore);
+    return say('🪟 Fenster','Draußen liegt der Garten hinter dem Haus. Zu dunkel, um viel zu erkennen.',explore);
+  case 'arbeit:tuer': enterScene('flur'); return explore();
+  /* Garten */
+  case 'garten:vorgarten': enterScene('vorgarten'); return explore();
+  case 'garten:brunnen':
+    if(F.armband) return say('🪣 Brunnen','Ein alter Brunnen. Das Armband hast du schon herausgefischt.',explore);
+    F.armband=true; note('Im Brunnen: ein Freundschaftsarmband mit „AMINA“'); buzz();
+    return say('🪣 Brunnen',['Ein alter Brunnen. Ganz unten glitzert etwas …','… ein Freundschaftsarmband aus bunten Perlen! Du fischst es heraus.'],
+      ()=>showDoc(bandHtml(),explore,{min:8,cls:'band',phone:{title:'📿 Freundschaftsarmband',text:'Schau auf den großen Bildschirm.'}}));
+  case 'garten:vogelscheuche': return say('🎩 Vogelscheuche',`Eine Vogelscheuche mit Zylinder. Sie sieht ${N()} verdächtig ähnlich.`,explore);
+  case 'garten:gruft':
+    if(F.apfel) return F.nails? finale() : nailEvent(finale);
+    if(F.gruft) return say('🪦 Gruft',['Die Gruft ist verschlossen. Ohne Königin passiert hier nichts.','Hinter dem Zaun leuchtet noch immer der Apfel am einsamen Baum.'],explore);
+    F.gruft=true; note('Hinter dem Zaun: ein einsamer Baum mit einem leuchtenden Apfel');
+    return say('🪦 Gruft',[`Eine steinerne Gruft. Auf der Tafel steht: <b>${N()}</b>.`,'Hier ruht also der Hausherr. Ohne Königin passiert hier wohl nichts.','Da! Ein paar hundert Meter hinter dem Zaun steht ein einzelner Baum. Daran hängt ein einziger Apfel und leuchtet im Mondlicht fast … königlich.'],explore);
+  case 'garten:zaun':
+    if(F.apfel) return say('Zaun','Du hast den Apfel schon. Ab zur Gruft!',explore);
+    if(!F.gruft) return say('Zaun','Hinter dem Zaun liegt nur Wiese und Dunkelheit.',explore);
+    return say('Zaun','Du musst wieder über den Zaun.',()=>hold('zaun','🤸 Über den Zaun','Rauf und rüber – 40 Sekunden!',()=>{ sfx('land'); enterScene('pfad');
+      hold('lauf','👻 Schnell zum Baum!','Beeil dich – hier sind überall Geister unterwegs! Nicht, dass sie dich noch entdecken!',()=>{ enterScene('baum');
+        say('🍎 Apfelbaum','Da ist er: ein kleiner Apfelbaum. Ganz oben hängt ein einziger Apfel.',geisterRaetsel); }); }));
+  /* Baum */
+  case 'baum:baum':
+    return hold('ruetteln','🌳 Am Baum rütteln','Jetzt alles geben – der Apfel muss runter!',()=>{
+      F.apfel=true; applyState(); sfx('win'); buzz(); flash('🍎 Royal Gala!'); note('Der Apfel vom Baum: ein Royal Gala');
+      say('🍎 Apfelbaum',['PLOPP! Der Apfel fällt dir direkt in die Hände.','Bei näherer Betrachtung: ein <b>Royal Gala</b>. Die Königin unter den Äpfeln!','Schnell zurück zur Gruft!'],()=>{ enterScene('rueckweg');
+        hold('rueckweg','👻 Zurück zum Garten','Die Geister schweben um dich herum – aber sie tun dir nichts. Sie spüren deine gute Aura und mögen dich! Du musst dich nicht fürchten: Sie wünschen dir nur das Beste. Ganz locker zurück.',()=>{ enterScene('garten');
+          hold('zaun','🤸 Über den Zaun','Ein letztes Mal rauf und rüber!',()=>{ sfx('land'); say('🪦 Garten','Zurück im Garten. Die Gruft wartet.',explore); }); }); }); },{shake:true});
+  }
+  explore();
+}
+function geisterRaetsel(){ F.geister=true; applyState(); sfx('nope'); buzz();
+  const frage=()=>startChoice('„Wir haben ein Lieblingslied. Es heißt wie das, was wir mit dir tun, wenn du die Antwort nicht kennst! Speak Now!!. Welches ist es?“',['Enchanted','Haunted','Delicate'],[falsch,richtig,falsch]);
+  const falsch=()=>{ sfx('nope'); say('👻 Geister','„Huuuh, falsch! Denk nach: Was machen Geister in einem alten Haus?“',frage); };
+  const richtig=()=>{ sfx('win'); flash('👻 Richtig!'); buzz();
+    say('👻 Geister',['„Oooh … sie kennt unser Lied!“','Die Geister summen zufrieden vor sich hin.'],()=>hold('pauseBaum','👻 Geisterständchen','Die Geister singen dir ihr Lieblingslied vor – schief, aber mit viel Gefühl. Ganz locker weitertreten.',()=>{
+      flash('👻 SPEAK NOW!'); buzz(); sfx('fanfare');
+      say('👻 Geister','Zum Schluss rufen die Geister dir zu: Viel Glück Sterbliche! – und schweben ein Stück zur Seite.',()=>say('🍎 Apfelbaum','Viel zu hoch zum Pflücken. Da hilft nur eins: kräftig rütteln!',explore)); })); };
+  say('👻 Apfelbaum','Doch plötzlich schweben die Geister heran und umringen den Baum.',()=>say('👻 Geister','„Huuuh! Den Apfel bekommst du nur, wenn du unser Rätsel löst!“',frage)); }
+/* ---------- Schallplatten sortieren ---------- */
+const ALBEN=[['Taylor Swift','#7fc8b8','#10302a'],['Fearless','#e8c46a','#3a2a08'],['Speak Now','#9a5ab8','#fff'],['Red','#c0283a','#fff'],['1989','#a8d0e8','#14283a'],['reputation','#2a2a2e','#eee'],['Lover','#f4a6c8','#4a1a34'],['folklore','#8e8e94','#fff'],['evermore','#a0643a','#fff3e0'],['Midnights','#2a3a6a','#e8ecff'],['The Tortured Poets Department','#e8e2d4','#2a2620'],['The Life of a Showgirl','#e07a3a','#2a1408']];
+let sortSt=null;
+function startSort(onDone){ const idx=[...Array(ALBEN.length).keys()];
+  do{ for(let i=idx.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [idx[i],idx[j]]=[idx[j],idx[i]]; } }while(idx[0]===0);
+  sortSt={rest:idx,placed:[],onDone,msg:''}; st.mode='sort';
+  $('boxTitle').textContent='🎶 Schallplatten sortieren'; $('boxText').innerHTML='Bring die Platten in die richtige Reihenfolge – vom ersten bis zum neuesten Album.'; $('boxUi').innerHTML='';
+  $('sortOv').style.display='flex'; renderSort(); legend(); pushUI(); }
+function renderSort(){ const s=sortSt;
+  $('sortShelf').innerHTML=ALBEN.map((a,i)=> i<s.placed.length? `<div class="slot" style="background:${a[1]};color:${a[2]};border:0">${a[0]}</div>` : `<div class="slot" style="color:#7a5a40">${i+1}</div>`).join('');
+  $('sortMsg').textContent=s.msg;
+  $('sortPile').innerHTML=s.rest.map(i=>`<button class="rec" data-rec="${i}" style="--c:${ALBEN[i][1]};background:${ALBEN[i][1]};color:${ALBEN[i][2]}"><span class="disc"></span>${ALBEN[i][0]}</button>`).join(''); }
+function pickRecord(i){ const s=sortSt; if(st.mode!=='sort'||!s||!s.rest.includes(i)) return;
+  if(i!==s.placed.length){ sfx('nope'); buzz(); s.msg=`„${ALBEN[i][0]}“ kam später. Welche war davor?`; renderSort(); pushUI(); return; }
+  sfx('tick'); s.placed.push(i); s.rest=s.rest.filter(x=>x!==i); s.msg='';
+  if(!s.rest.length){ $('sortOv').style.display='none'; sortSt=null; sfx('win'); flash('🎶 Perfekt!'); buzz(); return s.onDone(); }
+  renderSort(); pushUI(); }
+$('sortPile').addEventListener('click',e=>{ const b=e.target.closest('button[data-rec]'); if(b) pickRecord(+b.dataset.rec); });
+function briefChoice(){ startChoice('Den Brief öffnen?',['✉️ Brief öffnen','Liegen lassen'],[
+  ()=>{ F.brief=true; note('Im Briefkasten: ein nasser Brief an „John“'); sfx('pop');
+    showDoc(letter(),()=>say('✉️ Brief','Nur die Anrede ist noch zu erkennen. Der Rest ist verlaufen und nicht mehr zu lesen. Was wohl in dem Brief stand?',explore),{min:8,cls:'wet',phone:{title:'✉️ Nasser Brief',text:'Schau auf den großen Bildschirm.'}}); },
+  ()=>say('📮 Briefkasten','Du lässt den Brief, wo er ist.',explore) ]); }
+function letter(){ return `<p class="dear">Dear John,</p>
+<p class="smear">ich weiß gar nicht, wie ich anfangen soll. So lange habe ich gewartet und überlegt, ob ich dir überhaupt schreiben soll …</p>
+<p class="smear">Du hast immer gesagt, das wird schon alles, und ich habe es geglaubt. Heute sehe ich das anders, und das sollst du wissen.</p>
+<p class="smear">Ich hoffe, du liest das irgendwann. Und ich hoffe, du verstehst, warum.</p>
+<p class="smear" style="text-align:right">Für immer, …</p>`; }
+function bandHtml(){ const C=['#e46aa0','#8fb7ff','#f3cf6b','#7fe0b0','#c9b6f2','#ff9a5a','#f4f0dc'], L='AMINA', n=34, rx=270, ry=92; let back='', front='';
+  for(let i=0;i<n;i++){ const a=i/n*Math.PI*2+Math.PI/2, x=Math.cos(a)*rx, y=Math.sin(a)*ry, fr=Math.sin(a)>0, li= i<=2? 2-i : i>=n-2? 2+(n-i) : -1;
+    let b;
+    if(li>=0&&li<L.length){ b=`<g transform="translate(${x} ${y})"><rect x="-21" y="-21" width="42" height="42" rx="7" fill="#fffaf0" stroke="#c9b6a0" stroke-width="2"/><text y="12" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="30" fill="#2a1a3a">${L[li]}</text></g>`; }
+    else { const r= fr? 15 : 11, c=C[(i*5)%C.length]; b=`<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${fr?1:.75}"/><circle cx="${x-r*.35}" cy="${y-r*.35}" r="${r*.3}" fill="#fff" opacity=".55"/>`; }
+    if(fr) front+=b; else back+=b; }
+  return `<h2>Ein Freundschaftsarmband</h2><svg viewBox="-320 -140 640 280" width="100%" style="max-width:640px">
+  <ellipse cx="0" cy="0" rx="${rx}" ry="${ry}" fill="none" stroke="#e8d8f0" stroke-width="3" opacity=".6"/>${back}${front}</svg>
+  <div class="small" style="color:#e2daf4;margin-top:6px">aus bunten Perlen – mit Buchstaben: <b>AMINA</b></div>`; }
+function testament(){ return `<h2>Mein letzter Wille</h2>
+<p>Ich, ${N()}, bin nicht fort. Ich warte nur.</p>
+<p>Nur eine Königin ist würdig, mich wieder auferstehen zu lassen.</p>
+<p>Wer sie mir bringt und mich zurück ins Leben holt, dem gehört mein größter Schatz – ein Preis, so grandios, wie ihn dieses Dorf noch nie gesehen hat.</p>
+<p class="sig">Gezeichnet,<br>${N()}<br><span style="font-size:19px">am 13. Dezember</span></p>`; }
+function afterTestament(){ note('Testament: Nur eine Königin kann den Hausherrn zurückholen – es winkt ein grandioser Preis');
+  say('📜 Testament',['Eine Königin …? Welche Königin denn?','Dein Blick fällt aus dem Fenster. Im Mondlicht, im Garten hinter dem Haus, steht eine Gruft.','Vielleicht findest du dort mehr.'],()=>{ F.garten=true; note('Im Garten hinter dem Haus steht eine Gruft'); explore(); }); }
+function finale(){ F.apfelGelegt=true; applyState(); sfx('pop');
+  say('🪦 Gruft','Du legst den Royal Gala auf die kleine Steinbank vor der Gruft.',()=>{ const g=$('gruftG'); g&&g.classList.add('wobble'); sfx('door'); buzz();
+    say('🪦 Gruft','Der Boden beginnt zu ruckeln … die ganze Gruft wackelt!',()=>{ g&&g.classList.remove('wobble'); F.spalt=true; applyState();
+      say('🪦 Gruft',['Die Gruft ist schon einen Spalt breit offen!','Noch ein bisschen Kraft, dann kannst du sie öffnen.'],()=>hold('gruft','💪 Gruft aufstemmen','Stemm dich dagegen – je kräftiger, desto schneller geht es!',()=>{
+        F.gruftOffen=true; applyState(); sfx('door'); buzz(); flash('RUMMS!'); setTimeout(()=>sfx('land'),1300);
+        say('🪦 Gruft',['Die schwere Tür schwingt auf …',`… und heraus purzelt ${N()}! Nur in Unterhose.`],showClose); })); }); }); }
+let closeT=0, giftOpen=false, giftT=0; const CLOSE_MIN=16;
+const BUBBLE=()=>`<p style="margin:0 0 12px">„Du hast mich gerettet! Hab tausend Dank, edle Retterin!</p><p style="margin:0 0 12px">Um meine Dankbarkeit auszudrücken, werde ich dir ein Mahl kredenzen – ein unvergessliches Erlebnis, wahrlich einer Königin würdig!</p><p style="margin:0">Nimm dies als Zeichen meiner Dankbarkeit …“</p>`;
+function showClose(){ st.mode='close'; closeT=0; $('closeFace').innerHTML=closeSvg(); $('bubbleText').innerHTML=BUBBLE(); $('close').style.display='flex'; sfx('win'); legend(); pushUI(); }
+function closeClose(){ if(st.mode!=='close') return; $('close').style.display='none'; showGift(); }
+function showGift(){ st.mode='gift'; giftOpen=false; giftT=0;
+  $('giftInner').innerHTML=`<button class="giftBig" id="giftBtn">🎁</button><div style="font-size:24px;margin-top:14px;font-weight:800">Ein Geschenk für dich!</div><div class="small" style="font-size:16px">Klick drauf – oder tippe am Handy aufs Geschenk.</div>`;
+  $('giftOv').style.display='flex'; buzz(); legend(); pushUI(); }
+function openGift(){ if(st.mode!=='gift'||giftOpen) return; giftOpen=true; giftT=0;
+  $('giftInner').innerHTML=`<div class="voucher"><b>🎁 ${GIFT.title}</b>${GIFT.text}</div><div style="margin-top:16px;color:#e2daf4">weiter: treten oder klicken</div>`;
+  fireworks(5000); sfx('fanfare'); secret(`🎁 <b>${GIFT.title}</b><br>${GIFT.text}`); legend(); pushUI(); }
+function closeGift(){ if(st.mode!=='gift'||!giftOpen) return; $('giftOv').style.display='none';
+  say('🌙 Geschafft',[`${N()} lebt wieder – und dein Gutschein wartet.`,'Jetzt noch ganz locker ausrollen.'],cooldown); }
+const RIDDLE="<i>„Vier Ziffern. Die erste ist die kleinste, die nicht null ist. Die zweite und die vierte sind gleich und die größten, die es gibt. Die dritte ist um eins kleiner.“</i>";
+let crankA=0, wheelA=0, balgPh=0;
+function heimBike(){ const W=(x)=>`<g transform="translate(${x} 0)"><circle r="40" fill="none" stroke="#15121c" stroke-width="7"/><g class="wheel">${Array.from({length:8},(_,i)=>`<line x1="0" y1="0" x2="${Math.cos(i*Math.PI/4)*38}" y2="${Math.sin(i*Math.PI/4)*38}" stroke="#8a8aa0" stroke-width="1.5"/>`).join('')}</g><circle r="4" fill="#8a8aa0"/></g>`;
+  return `<g id="bike" transform="translate(560 480) scale(1.3)">
+  ${W(-62)}${W(62)}
+  <g stroke="#e46aa0" stroke-width="6" stroke-linecap="round" fill="none"><path d="M-62 0 L-14 -54 L0 0 Z"/><path d="M-14 -54 L44 -50 L0 0"/><path d="M44 -50 L62 0"/><path d="M44 -50 L48 -66 L60 -68"/></g>
+  <g stroke="#2a2836" stroke-width="4" stroke-linecap="round"><path d="M-78 -46 L-26 -46 M-62 0 L-70 -46"/><path d="M-24 -60 L-4 -60"/></g>
+  <g transform="translate(-50 -48)">
+   <path d="M-12 -2 Q-14 -40 0 -52 Q14 -40 12 -2Z" fill="${SKIN}"/><path d="M-13 -6 h26 l2 12 h-30z" fill="#1e2440"/>
+   <path d="M6 4 Q14 24 22 40 M-6 4 Q6 26 10 44" stroke="${SKIN}" stroke-width="8" stroke-linecap="round" fill="none"/>
+   <path d="M8 -38 Q30 -30 44 -24" stroke="${SKIN}" stroke-width="7" stroke-linecap="round" fill="none"/>
+   <g transform="translate(0 -70) scale(.42)">${beckHead()}</g></g>
+  <g id="riderLegs" stroke-linecap="round" fill="none"><polyline id="legB" stroke="#5a3a66" stroke-width="9"/><polyline id="legF" stroke="#7a4a88" stroke-width="9"/></g>
+  <g transform="translate(-14 -62)"><path d="M-6 0 Q0 -36 24 -50 L36 -38 Q16 -24 10 4Z" fill="#e46aa0"/>
+   <path d="M26 -42 Q48 -34 60 -10" stroke="#f0cbb0" stroke-width="7" stroke-linecap="round" fill="none"/>
+   <circle cx="34" cy="-64" r="16" fill="#f0cbb0"/><path d="M16 -60 Q13 -84 34 -84 Q52 -84 51 -66 Q48 -72 44 -70 Q40 -74 36 -71 Q33 -67 30 -66 Q32 -58 30 -52 q-2.5 3 -5 .5 q-2.5 2.5 -4.5 -.5 q-3 1.5 -4 -2 q-2.5 0 -2 -3.5 Q13.5 -56 16 -60Z" fill="#241612"/><circle cx="42" cy="-64" r="2.2" fill="#2a1a10"/></g>
+  </g>`; }
+SC.heim={name:'Zurück ins Dorf', svg:()=>`<g transform="scale(3.158)"><rect width="380" height="222" fill="#141b3f"/>
+ ${Array.from({length:34},(_,j)=>`<circle cx="${(j*97+20)%380}" cy="${(j*41+8)%95}" r="${j%3?.5:.8}" fill="#fff" opacity=".85"/>`).join('')}
+ <circle cx="60" cy="34" r="22" fill="#f4f0dc" opacity=".1"/><circle cx="60" cy="34" r="13" fill="#f4f0dc"/>
+ <rect y="105" width="380" height="117" fill="#1a2230"/>
+ <path id="heimPath" d="M-20 224 Q150 180 262 110" stroke="#3a3640" stroke-width="16" fill="none" stroke-linecap="round"/>
+ <g id="heimVillage" transform="translate(262 109) scale(.6)"><g transform="translate(-57 0)">${village(5)}</g></g></g>
+ ${heimBike()}${vign}`};
+function heimTick(dt){ const p=Math.min(1,st.coolT/COOL_SECS), v=$('heimVillage'); if(!v) return;
+  v.setAttribute('transform',`translate(${262-p*20} ${109+p*6}) scale(${.6+p*1.6})`);
+  const sp=Math.max(0,st.pS)/60; crankA+=dt*sp*4; wheelA+=dt*sp*260;
+  document.querySelectorAll('#bike .wheel').forEach(w=>w.setAttribute('transform',`rotate(${wheelA%360})`));
+  const b=$('bike'); b&&b.setAttribute("transform",`translate(560 ${480+Math.sin(crankA*2)*1.5}) scale(1.3)`);
+  const hip=[-12,-60], leg=(a)=>{ const px=Math.cos(a)*18, py=Math.sin(a)*18, kx=(hip[0]+px)/2+14, ky=(hip[1]+py)/2-8; return `${hip[0]},${hip[1]} ${kx},${ky} ${px},${py}`; };
+  const lb=$('legB'), lf=$('legF'); lb&&lb.setAttribute('points',leg(crankA+Math.PI)); lf&&lf.setAttribute("points",leg(crankA)); }
+function cooldown(){ $('nails').style.display='none'; enterScene('heim'); heimTick(0); st.mode='cool'; st.coolT=0; $('boxTitle').textContent='🌙 Ausrollen'; $('boxText').innerHTML=`Ihr radelt gemeinsam zurück ins Dorf – ${N()} hinten auf dem Gepäckträger. Ganz locker weitertreten.`;
+  $('boxUi').innerHTML=`<div class="bar"><i id="cb"></i></div><div class="barlbl"><span>ganz locker</span><span id="cl"></span></div>`; legend(); pushUI(); }
+function finishGame(){ st.mode='end'; st.running=false; const avg=st.t? st.wSum/st.t:0, hr=st.hrT? st.hrSum/st.hrT:0;
+  fireworks(6000); sfx('fanfare');
+  $('endCard').innerHTML=`<h1>Geschafft! 🍎</h1><p>${N()} lebt wieder – und der Gutschein für Dampfnudeln und Gulasch gehört dir.</p>
+  <p style="font-size:18px">⏱ ${fmtT(st.t)} · Ø ${Math.round(avg)} W · max ${Math.round(st.wMax)} W${hr?` · Ø ${Math.round(hr)} bpm`:''}<br><span class="small">Basis: ${st.base} W</span></p>
+  <div class="row"><button class="go" onclick="location.reload()">Nochmal spielen</button></div>
+  <p class="small" style="margin-top:16px">Musik (via OpenGameArt.org): „Pushing Ahead“ – Centurion_of_war · „Creepy Forest“ – Augmentality (Brandon Morris) · „WTF Ghost“ – Alexandr Zhelanov (CC-BY 3.0) · „Dungeon 04“ – Beau Buckley (CC-BY-SA 4.0) · „Bar Jazz Piano Song (Fingersnap)“ – VViard (CC-BY 4.0)</p>`; $('endOv').style.display='flex'; }
+
+/* ---------- Hauptschleife ---------- */
+let last=0, uiT=0;
+function loop(now){
+  const dt=last? Math.min(.1,(now-last)/1000):0; last=now;
+  const p=power(); st.pS+=(p-st.pS)*Math.min(1,dt/0.8);
+  $('mW').textContent=Math.round(st.pS); $('mH').textContent= live.hr? live.hr : '–';
+  updateSkip();
+  if(st.running){ const g=dt*SPEED; if(!st.pre){ st.t+=g; st.wSum+=p*g; st.wMax=Math.max(st.wMax,st.pS); if(live.hr){ st.hrSum+=live.hr*g; st.hrT+=g; } } $('mT').textContent=fmtT(st.t); tick(g); }
+  requestAnimationFrame(loop);
+}
+function stopped(dt){ if(!pedaling()) st.stopT+=dt; else st.stopT=0; return st.stopT>3; }
+function tick(dt){
+  const ped=pedaling();
+  uiT+=dt; if(uiT>0.5){ uiT=0; if(st.mode==='hold'||st.mode==='explore') pushUI(); }
+  if(st.mode==='calib'){
+    st.calib.t+=dt; if(st.calib.t>45){ st.calib.sum+=st.pS*dt; st.calib.n+=dt; }
+    const k=Math.min(5,Math.floor(st.calib.t/JUMP)); if(k!==st.wegK){ st.wegK=k; $('scene').innerHTML=DEFS+SC.weg.svg(); if(k>0) sfx('blip'); }
+    $('cbb').style.width=Math.min(100,st.calib.t/CALIB_SECS*100)+'%'; $('cbl').textContent=`noch ${fmtT(CALIB_SECS-st.calib.t)}`;
+    const li=Math.min(calibLines.length-1,Math.floor(st.calib.t/JUMP)); if($('boxText').dataset.i!=String(li)){ $('boxText').dataset.i=li; $('boxText').innerHTML=calibLines[li]; pushUI(); }
+    if(st.calib.t>=CALIB_SECS){ $('boxText').dataset.i='';
+      if(!$('manualBase').checked && st.calib.n>20) st.base=Math.round(Math.max(45,Math.min(260,st.calib.sum/st.calib.n))/5)*5;
+      say('🏚 Angekommen',[`Deine Basis: <b>${st.base} W</b>. Alle Aufgaben richten sich danach.`,
+        `Da stehst du nun: vor dem Haus von ${N()}.`,
+        `Im Dorf kannte jeder diesen Namen. ${N()} galt als völlig verrückt, und alle erzählten sich, dass hier oben nachts Geister beschworen wurden.`,
+        'Heute Nacht hast du die einmalige Gelegenheit, das Haus zu erkunden.'],
+        ()=>startChoice('Wohin zuerst?',['🚪 Zur Haustür','🌿 Vorgarten ansehen'],[
+          ()=>{ enterScene('vorgarten'); say('🚪 Haustür','Du gehst Richtung Haustür – aber zwischen dir und dem Haus steht ein verschlossenes Gartentor.',explore); },
+          ()=>{ enterScene('vorgarten'); say('🌿 Vorgarten','Ein verwilderter Vorgarten hinter einem rostigen Zaun mit spitzen Stäben. Das Gartentor ist verschlossen.',explore); } ])); }
+    return;
+  }
+  if(st.mode==='explore'){ updateExplore(); }
+  else if(st.mode==='intro'){ introTick(dt); }
+  else if(st.mode==='text'){ if(st.pre) return; textT+= ped? dt : dt*.35; const tb=$('tb'); if(tb) tb.style.width=Math.min(100,textT/textMin*100)+'%'; if(textT>=textMin) finishText(); }
+  else if(st.mode==='doc'){ docT+= ped? dt : dt*.35; const b=document.querySelector('#docBar i'); if(b) b.style.width=Math.min(100,docT/docMin*100)+'%'; if(docT>=docMin) closeDoc(); }
+  else if(st.mode==='close'){ closeT+= ped? dt : dt*.35; const b=document.querySelector('#closeBar i'); if(b) b.style.width=Math.min(100,closeT/CLOSE_MIN*100)+'%'; if(closeT>=CLOSE_MIN) closeClose(); }
+  else if(st.mode==='gift'){ if(giftOpen){ giftT+= ped? dt : dt*.35; if(giftT>=14) closeGift(); } }
+  else if(st.mode==='hold'){
+    const v=st.pS, ok=v>=act.target;
+    const rate= !ok? -.3 : act.fast? Math.min(2, 1+(v/act.target-1)/(FAST_MAX-1)) : 1;
+    act.prog=Math.max(0,Math.min(act.secs, act.prog+dt*rate));
+    $('hb').style.width=(act.prog/act.secs*100)+'%';
+    $('hl1').textContent=`Ziel ${act.target} W · jetzt ${Math.round(v)} W ${ok?'✓':'↑'}`+(act.fast&&ok? ` · Tempo ×${rate.toFixed(1)}`:'');
+    $('hl2').textContent=`noch ${fmtT((act.secs-act.prog)/Math.max(1,rate))}`+(act.fast? ` · doppelt so schnell ab ${Math.round(act.target*FAST_MAX)} W`:'');
+    if(act.shake){ const t=$('treeG'); t&&t.setAttribute('transform',`rotate(${Math.sin(st.t*17)*(ok?2.2:.5)} 600 470)`); }
+    if(act.nails){ nailPhase+= dt*(ok? 5*rate : pedaling()? 1.5 : 0); const fx=Math.sin(nailPhase)*70;
+      const nf=$('nailFile'); nf&&nf.setAttribute('transform',`translate(${fx} 0)`); const d=$('nailDust'); d&&d.setAttribute('opacity', ok? .5+.4*Math.abs(Math.sin(nailPhase*2)) : 0); }
+    if(act.balg){ balgPh+= dt*(ok? 4.5*rate : pedaling()? 1.5 : 0); const c=.5+.5*Math.cos(balgPh);
+      $('balgOuter')&&$('balgOuter').setAttribute('transform','translate(222 418) scale(1.6)');
+      const g=$('balgG'); g&&g.setAttribute('transform',`translate(0 0) scale(1 ${(.5+.5*c).toFixed(3)})`);
+      const pf=$('balgPuff'); pf&&pf.setAttribute('opacity', ok? Math.max(0,Math.sin(balgPh))*.8 : 0);
+      const fl=$('flames'); fl&&fl.setAttribute('transform',`translate(410 465) scale(${(.6+.45*act.prog/act.secs+(ok?.05*(1-c):0)).toFixed(3)}) translate(-410 -465)`); }
+    if(act.prog>=act.secs){ const f=act.onDone; act=null; f(); }
+    else if(stopped(dt)){ const o=act.opts; act=null; st.stopT=0; say('☕ Kurze Pause','Kurz verschnauft? Sobald du wieder trittst, geht es von vorn los.',()=>startHold(o)); }
+  } else if(st.mode==='rest'){
+    act.t+=dt; $('rb').style.width=Math.min(100,act.t/act.secs*100)+'%'; $('rl').textContent=fmtT(act.secs-act.t);
+    if(act.t>=act.secs){ const f=act.then; act=null; f(); }
+  } else if(st.mode==='cool'){ heimTick(dt);
+    st.coolT+=dt; $('cb').style.width=Math.min(100,st.coolT/COOL_SECS*100)+'%'; $('cl').textContent=fmtT(COOL_SECS-st.coolT);
+    if(st.coolT>=COOL_SECS) finishGame();
+  }
+}
+let flT=null; function flash(t){ const f=$('flashMsg'); f.textContent=t; f.style.opacity=1; clearTimeout(flT); flT=setTimeout(()=>f.style.opacity=0,2200); }
+
+/* ---------- Testmodus ---------- */
+function skipCurrent(){ if(live.src!=='sim') return; const m=st.mode;
+  if(m==='intro') endIntro(); else if(m==='calib') st.calib.t=CALIB_SECS; else if(m==='text') finishText(); else if(m==='doc') closeDoc(); else if(m==='close') closeClose(); else if(m==='gift'){ giftOpen? closeGift() : openGift(); }
+  else if(m==='hold'&&act){ const f=act.onDone; act=null; f(); } else if(m==='rest'&&act){ const f=act.then; act=null; f(); }
+  else if(m==='lock'&&act){ while(act&&st.mode==='lock'&&act.got.length<act.code.length) lockDigit(act.code[act.got.length]); }
+  else if(m==='sort'){ while(sortSt) pickRecord(sortSt.placed.length); }
+  else if(m==='cool') st.coolT=COOL_SECS; }
+function updateSkip(){ $('skipBtn').style.display= live.src==='sim' && st.running && ['intro','sort','calib','text','hold','rest','lock','cool','doc','close','gift'].includes(st.mode) ? 'block':'none'; }
+$('skipBtn').onclick=skipCurrent;
+$('box').addEventListener('click',e=>{ if(st.mode==='text' && !e.target.closest('button')) finishText(); });
+$('boxUi').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b||st.mode!=='lock') return; if(b.dataset.x) cancelLock(); else if(b.dataset.d!==undefined) lockDigit(+b.dataset.d); });
+$('doc').addEventListener('click',closeDoc);
+$('intro').addEventListener('click',()=>{ if(introT>1.5) endIntro(); });
+$('close').addEventListener('click',closeClose);
+$('giftOv').addEventListener('click',()=>{ giftOpen? closeGift() : openGift(); });
+document.querySelectorAll('#speedBox button').forEach(b=>b.onclick=()=>{ SPEED=+b.dataset.sp; document.querySelectorAll('#speedBox button').forEach(x=>x.classList.toggle('on',x===b)); });
+
+/* ---------- Start ---------- */
+const calibLines=[
+ 'Du verlässt das Dorf. Oben auf dem Hügel thront ein altes Haus – man sieht es von überall. Dort soll ein gleichermaßen exzentrischer wie gutaussehender Mann gewohnt haben …',
+ 'Fahr angenehm zügig, so dass du dich noch unterhalten könntest, aber du nicht nur die Beine durchdrehen lässt.',
+ 'Die Sonne sinkt. Das Haus war wohl doch weiter weg, als ursprünglich gedacht. Naja, wenigstens ist der Sonnenuntergang schön.',
+ 'Im Dorf erzählt man sich so einiges über dieses Haus …',
+ 'Fast da. Der Mond geht schon auf.',
+ 'Geschafft – du stehst vor dem Haus.'];
+function startGame(){
+  $('startOv').style.display='none'; try{ ac=ac||new AudioContext(); }catch(e){}
+  st.name=($('pname').value||'').trim()||'Philipp Beckington';
+  st.base=Math.max(40,+$('base').value||80);
+  if(live.src==='sim') setSim(st.base);
+  st.running=true; st.pre=true; enterScene('cafe'); startIntro();
+}
+/* ---------- Vorspann (Blitz & Donner) ---------- */
+let introT=0, introStep=0; const INTRO_AUTO=9, STRIKES=[.5,2.3,6.2];
+function startIntro(){ st.mode='intro'; introT=0; introStep=0; $('introTitle').style.opacity=0; $('introHint').style.opacity=0; $('intro').style.display='block'; legend(); pushUI(); }
+function introTick(dt){ introT+=dt;
+  while(introStep<STRIKES.length && introT>=STRIKES[introStep]){ strike(introStep); introStep++; }
+  if(introT>=2.6) $('introTitle').style.opacity=1; if(introT>=4) $('introHint').style.opacity=1;
+  if(introT>=INTRO_AUTO) endIntro(); }
+function strike(i){ const b=$('introBolt'), f=$('introFlash'); let x=[300,880,560][i%3], y=0, pts=[[x,y]];
+  while(y<560){ y+=40+Math.random()*50; x+=(Math.random()-.5)*110; pts.push([Math.round(x),Math.round(y)]); }
+  b.setAttribute('points',pts.map(p=>p.join(',')).join(' '));
+  const seq=[[0,1,.85],[90,.15,.1],[160,1,.6],[420,0,0]];
+  seq.forEach(([t,bo,fo])=>setTimeout(()=>{ b.setAttribute('opacity',bo); f.style.opacity=fo; },t/SPEED));
+  setTimeout(()=>thunder(i===1?1:.75),250/SPEED); }
+function thunder(vol=1){ try{ ac=ac||new AudioContext(); const sr=ac.sampleRate, d=3.2, n=Math.floor(sr*d), buf=ac.createBuffer(1,n,sr), c=buf.getChannelData(0); let l=0;
+  for(let i=0;i<n;i++){ const w=Math.random()*2-1; l=(l+.02*w)/1.02; c[i]=l*3.5 + (i<sr*.25? w*.35*(1-i/(sr*.25)) : 0); }
+  const s=ac.createBufferSource(); s.buffer=buf; const f=ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=700; const g=ac.createGain(), t=ac.currentTime;
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.05); g.gain.exponentialRampToValueAtTime(.35*vol,t+.7); g.gain.linearRampToValueAtTime(.55*vol,t+1.1); g.gain.exponentialRampToValueAtTime(.001,t+d);
+  s.connect(f).connect(g).connect(ac.destination); s.start(); s.stop(t+d); }catch(e){} }
+function endIntro(){ if(st.mode!=='intro') return; $('intro').style.display='none'; $('introFlash').style.opacity=0; st.introDone=true; cafeScene(); }
+/* ---------- Im Dorfcafé ---------- */
+const SPK={n:'☕ Im Dorfcafé',f:'👵 Frau am Nebentisch',m:'👴 Mann am Nebentisch'};
+const CAFE=[
+ ['n','Ein kleines Café am Dorfplatz. Amina wärmt sich die Hände an einer Tasse Cappuccino.'],
+ ['f','Hast du’s gehört? Im Haus auf dem Hügel brennt wieder Licht.'],
+ ['m','Unsinn. Da wohnt keiner mehr, seit der alte Sir Beckington gestorben ist.'],
+ ['f','Man sagt, er liegt in der Gruft im Garten und findet keine Ruhe.'],
+ ['m','Angeblich hat er ein Testament hinterlassen. Aber gefunden hat es nie jemand.'],
+ ['f','Wer da hochgeht, der kommt nicht zurück. Das sag ich dir.'],
+ ['n','Amina stellt ihre Tasse ab. Ein Licht im Fenster … ein verschwundenes Testament …'],
+ ['n','Sie schnappt sich ihr Fahrrad. Auf zum Haus auf dem Hügel!']];
+function spk(w){ ['f','m'].forEach(k=>{ const e=$('spk_'+k); if(e) e.style.display= k===w? '' : 'none'; }); }
+function cafeScene(){ enterScene('cafe'); const L=CAFE.slice();
+  const step=()=>{ if(!L.length){ spk(null); return startCalib(); } const [w,t]=L.shift(); spk(w); say(SPK[w],t,step); }; step(); }
+function startCalib(){
+  st.pre=false; st.wegK=-1; enterScene('weg'); st.mode='calib'; st.calib={sum:0,n:0,t:0};
+  $('boxTitle').textContent='🚶 Der Weg zum Haus'; $('boxText').innerHTML=calibLines[0]; $('boxText').dataset.i='0';
+  $('boxUi').innerHTML=`<div class="bar"><i id="cbb"></i></div><div class="barlbl"><span>Basis-Tempo</span><span id="cbl"></span></div>`;
+  legend(); pushUI();
+}
+
+/* ---------- Handy-Verbindung ---------- */
+let peer=null, conn=null;
+const roomCode=Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+function initPhone(){
+  $('roomCode').textContent=roomCode;
+  const online=/^https?:$/.test(location.protocol), url=location.origin+location.pathname+'?ctl='+roomCode;
+  if(online && window.QRCode){ new QRCode($('qr'),{text:url,width:116,height:116,correctLevel:QRCode.CorrectLevel.M}); $('qrHint').textContent=url; }
+  else { $('qr').style.display='none'; $('qrHint').innerHTML='Für die Handy-Steuerung muss diese Datei online liegen (z.&nbsp;B. per Netlify Drop). Dann erscheint hier ein QR-Code.'; }
+  if(!window.Peer){ $('qrHint').textContent+=' (Online-Modul nicht geladen.)'; return; }
+  peer=new Peer(PREFIX+roomCode);
+  peer.on('connection',c=>{ conn=c; c.on('open',()=>{ st.phone=true; $('phoneTag').style.display='block'; legend(); flash('📱 Handy verbunden'); pushUI(); });
+    c.on('data',m=>{ if(m.t==='hello') pushUI(); if(m.t==='pick') tryPick(m.id);
+      if(m.t==='next'){ if(st.mode==='intro') endIntro(); else if(st.mode==='text') finishText(); else if(st.mode==='doc') closeDoc(); else if(st.mode==='close') closeClose(); else if(st.mode==='gift') closeGift(); }
+      if(m.t==='gift') openGift(); if(m.t==='rec') pickRecord(m.i);
+      if(m.t==='digit') lockDigit(m.d); if(m.t==='cancel') cancelLock(); if(m.t==='choice') pickChoice(m.i); });
+    c.on('close',()=>{ st.phone=false; $('phoneTag').style.display='none'; legend(); flash('Handy getrennt'); }); });
+  peer.on('error',e=>{ if(e.type==='unavailable-id') $('qrHint').textContent='Code belegt – Seite neu laden.'; });
+}
+function send(o){ if(conn&&conn.open) conn.send(o); }
+function plain(h){ const d=document.createElement('div'); d.innerHTML=h; return d.textContent; }
+function pushUI(){
+  if(!conn||!conn.open) return; let u;
+  if(st.mode==='explore') u={m:'explore',room:SC[st.scene].name,pedal:pedaling()||live.src==='sim',items:st.order.map(id=>({id,label:roomLabel(id)}))};
+  else if(st.mode==='text') u={m:'text',title:$('boxTitle').textContent,text:plain($('boxText').innerHTML)};
+  else if(st.mode==='intro') u={m:'text',title:'⚡ Vorspann',text:'Das Haus auf dem Hügel'};
+  else if(st.mode==='doc') u={m:'text',title:docPhone.title,text:docPhone.text};
+  else if(st.mode==='close') u={m:'text',title:'💬 '+st.name,text:plain(BUBBLE())};
+  else if(st.mode==='gift') u={m:'gift',open:giftOpen};
+  else if(st.mode==='hold'&&act) u={m:'hold',title:act.title,label:`Halte über ${act.target} W`,prog:Math.round(act.prog/act.secs*100),now:`jetzt ${Math.round(st.pS)} W`};
+  else if(st.mode==='lock'&&act) u={m:'lock',n:act.code.length,got:act.got};
+  else if(st.mode==='sort'&&sortSt) u={m:'sort',msg:sortSt.msg,placed:sortSt.placed.map(i=>ALBEN[i][0]),rest:sortSt.rest.map(i=>({i,t:ALBEN[i][0]}))};
+  else if(st.mode==='choice'&&act) u={m:'choice',q:plain($('boxText').innerHTML),opts:act.opts};
+  else u={m:'info',text:plain($('boxText').innerHTML)};
+  u.notes=st.notes; send({t:'ui',u});
+}
+function buzz(){ send({t:'buzz'}); }
+function secret(html){ send({t:'secret',html}); }
+
+/* ---------- Feuerwerk & Klang ---------- */
+function fireworks(ms){ const cv=$('fw'), x=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
+  const P=[], C=['#e46aa0','#c9b6f2','#f3cf6b','#7fe0b0','#8fb7ff'], end=performance.now()+ms; let nb=0;
+  const burst=()=>{ const bx=cv.width*(.15+Math.random()*.7), by=cv.height*(.12+Math.random()*.4), c=C[Math.floor(Math.random()*C.length)];
+    for(let i=0;i<80;i++){ const a=Math.random()*7, v=2+Math.random()*5; P.push({x:bx,y:by,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c}); } };
+  (function f(now){ x.clearRect(0,0,cv.width,cv.height); if(now<end&&now>nb){ burst(); nb=now+280+Math.random()*350; }
+    for(let i=P.length-1;i>=0;i--){ const q=P[i]; q.x+=q.vx; q.y+=q.vy; q.vy+=.06; q.vx*=.985; q.l-=.011; if(q.l<=0){P.splice(i,1);continue;}
+      x.globalAlpha=q.l; x.fillStyle=q.c; x.beginPath(); x.arc(q.x,q.y,2.5,0,7); x.fill(); }
+    x.globalAlpha=1; if(now<end||P.length) requestAnimationFrame(f); else x.clearRect(0,0,cv.width,cv.height); })(performance.now()); }
+let ac=null;
+function tone(f,d,type='sine',vol=.1,slide=0){ try{ ac=ac||new AudioContext(); const o=ac.createOscillator(), g=ac.createGain(); o.type=type; o.frequency.setValueAtTime(f,ac.currentTime);
+  if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),ac.currentTime+d); g.gain.setValueAtTime(vol,ac.currentTime); g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+  o.connect(g).connect(ac.destination); o.start(); o.stop(ac.currentTime+d);}catch(e){} }
+function sfx(k){ ({blip:()=>tone(880,.05,'sine',.03), pop:()=>tone(620,.08,'triangle',.06,200), whoosh:()=>tone(900,.6,'triangle',.06,-700),
+  unlock:()=>{tone(1200,.08,'square',.05);setTimeout(()=>tone(1600,.1,'square',.05),90);}, door:()=>tone(90,.6,'sawtooth',.07,-30), tick:()=>tone(1000,.05,'square',.05),
+  nope:()=>tone(220,.3,'square',.05,-60), win:()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.25,'triangle',.1),i*140)),
+  fanfare:()=>[523,659,784,1046,784,1046,1318].forEach((f,i)=>setTimeout(()=>tone(f,.22,'triangle',.11),i*150)),
+  land:()=>{ try{ const a=new Audio(AUDIO.land); a.volume=.9; a.play().catch(()=>{}); }catch(e){} } })[k]?.(); }
+
+/* ---------- Musik ---------- */
+// Weg: Pushing Ahead · Vorgarten/Haus/Garten/Apfelbaum: Creepy Forest · Wiese & Rückweg: WTF Ghost
+// Gruft nach dem Apfelbaum: Dungeon 04 (endet, wenn die Gruft aufgeht) · danach & Heimfahrt: still
+const TRACKS={}; let curMusic=null;
+function track(k){ if(!TRACKS[k]){ const a=new Audio(AUDIO[k]); a.loop=true; a.volume=0; a.preload='auto'; TRACKS[k]=a; } return TRACKS[k]; }
+function musicFor(){ if(!st.running) return null; const s=st.scene;
+  if(s==='cafe') return st.introDone? 'bar' : null;   // Vorspann still, Café: Bar-Jazz
+  if(s==='weg') return 'push';
+  if(s==='pfad'||s==='rueckweg') return 'ghost';
+  if(s==='heim') return null;
+  if(s==='garten'&&F.apfel) return F.gruftOffen? null : 'dungeon';
+  return 'forest'; }
+function updateMusic(){ const k=musicFor(); if(k===curMusic) return; curMusic=k; if(k){ const a=track(k); if(a.paused) a.play().catch(()=>{}); } }
+setInterval(()=>{ const step=.05/FADE_S*MUSIC_VOL; for(const k in TRACKS){ const a=TRACKS[k], tgt= k===curMusic? MUSIC_VOL : 0;
+  if(a.volume<tgt) a.volume=Math.min(tgt,a.volume+step); else if(a.volume>tgt) a.volume=Math.max(tgt,a.volume-step);
+  if(tgt===0 && a.volume===0 && !a.paused) a.pause(); } },50);
+
+/* ---------- Bluetooth: Trainer & Pulsgurt ---------- */
+async function connectTrainer(){
+  if(!navigator.bluetooth){ $('trState').textContent='Web Bluetooth gibt es nur in Chrome oder Edge.'; return; }
+  try{ const dev=await navigator.bluetooth.requestDevice({filters:[{services:[0x1826]},{services:[0x1818]}],optionalServices:[0x1826,0x1818]});
+    dev.addEventListener('gattserverdisconnected',()=>{ live.src='sim'; $('sim').style.display=''; flash('Trainer getrennt'); });
+    const server=await dev.gatt.connect();
+    try{ const c=await (await server.getPrimaryService(0x1826)).getCharacteristic(0x2AD2); c.addEventListener('characteristicvaluechanged',e=>parseFTMS(e.target.value)); await c.startNotifications(); }
+    catch(e){ const c=await (await server.getPrimaryService(0x1818)).getCharacteristic(0x2A63); c.addEventListener('characteristicvaluechanged',e=>parseCP(e.target.value)); await c.startNotifications(); }
+    live.src='ble'; $('sim').style.display='none'; $('trState').textContent='✓ Verbunden: '+dev.name;
+  }catch(e){ if(e.name!=='NotFoundError') $('trState').textContent='Fehler: '+e.message; } }
+function parseFTMS(dv){ const L=dv.byteLength; if(L<2) return; const f=dv.getUint16(0,true); let i=2;
+  if(!(f&1)) i+=2; if(f&2) i+=2; if(f&4){ if(i+2<=L) live.c=dv.getUint16(i,true)/2; i+=2; } if(f&8) i+=2; if(f&16) i+=3; if(f&32) i+=2;
+  if(f&64){ if(i+2<=L) live.p=Math.max(0,dv.getInt16(i,true)); } }
+let crank=null;
+function parseCP(dv){ const f=dv.getUint16(0,true); live.p=Math.max(0,dv.getInt16(2,true)); let i=4; if(f&1) i+=1; if(f&4) i+=2; if(f&16) i+=6;
+  if(f&32&&i+4<=dv.byteLength){ const r=dv.getUint16(i,true), t=dv.getUint16(i+2,true);
+    if(crank){ const dr=(r-crank.r+65536)%65536, dtt=((t-crank.t+65536)%65536)/1024; if(dtt>0) live.c=dr/dtt*60; else if(performance.now()-crank.at>3000) live.c=0; }
+    if(!crank||r!==crank.r) crank={r,t,at:performance.now()}; } }
+async function connectHR(){
+  if(!navigator.bluetooth){ $('hrState').textContent='Web Bluetooth gibt es nur in Chrome oder Edge.'; return; }
+  try{ const dev=await navigator.bluetooth.requestDevice({filters:[{services:['heart_rate']}]});
+    dev.addEventListener('gattserverdisconnected',()=>{ live.hr=null; flash('Pulsgurt getrennt'); });
+    const c=await (await (await dev.gatt.connect()).getPrimaryService('heart_rate')).getCharacteristic('heart_rate_measurement');
+    c.addEventListener('characteristicvaluechanged',e=>{ const dv=e.target.value, fl=dv.getUint8(0); live.hr= fl&1? dv.getUint16(1,true) : dv.getUint8(1); });
+    await c.startNotifications(); $('hrState').textContent='✓ Verbunden: '+dev.name;
+  }catch(e){ if(e.name!=='NotFoundError') $('hrState').textContent='Fehler: '+e.message; } }
+
+/* ---------- Simulation ---------- */
+function setSim(w){ sim.w=Math.max(0,Math.min(600,Math.round(w))); $('sW').value=Math.min(400,sim.w); $('sWn').value=sim.w; }
+$('sW').oninput=e=>setSim(+e.target.value); $('sWn').oninput=e=>setSim(+e.target.value||0);
+$('bEasy').onclick=()=>setSim(st.base); $('bStop').onclick=()=>setSim(0);
+addEventListener('keydown',e=>{ if(live.src!=='sim'||e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowUp'){ e.preventDefault(); setSim(sim.w+10); } if(e.key==='ArrowDown'){ e.preventDefault(); setSim(sim.w-10); }
+  if(e.key==='l'||e.key==='L') setSim(st.base); if(e.key==='s'||e.key==='S') setSim(0); if(e.key==='n'||e.key==='N') skipCurrent(); });
+$('bTrainer').onclick=connectTrainer; $('bHR').onclick=connectHR; $('bStart').onclick=startGame;
+st.wegK=0; enterScene('weg'); $('boxTitle').textContent=''; $('boxText').innerHTML='Bereit?'; legend();
+initPhone();
+requestAnimationFrame(loop);
+window.T={get st(){return st}, get act(){return act}, get music(){return curMusic}, get tracks(){return Object.fromEntries(Object.entries(TRACKS).map(([k,a])=>[k,{vol:+a.volume.toFixed(2),paused:a.paused}]))}, examine, tryPick, finishText, pickChoice, lockDigit, setSim, skipCurrent, closeDoc, enterScene, nailEvent, cooldown, showClose, endIntro, startCalib, pickRecord, get sortSt(){return sortSt}, get introT(){return introT}, examine2:(sc,id)=>{enterScene(sc);examine(id);}};
+}
+</script>
+</body>
+</html>

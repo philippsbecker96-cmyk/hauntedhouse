@@ -55,6 +55,7 @@ button.go{background:linear-gradient(90deg,#e46aa0,#8a6cf0);font-size:18px}
 input[type=number],input[type=text]{font:700 16px Nunito,sans-serif;padding:7px 9px;border-radius:8px;border:1px solid #6a55a8;background:#14101f;color:var(--text)}
 input[type=number]{width:90px}
 .small{font-size:14px;color:var(--muted)}
+.eggs{display:flex;flex-wrap:wrap;gap:6px}.eggs span{background:#3a2d66;border:1px solid #6a55a8;border-radius:20px;padding:4px 11px;font-size:14px}.eggs .no{opacity:.45}
 #qrBox{display:flex;gap:16px;align-items:center;margin-top:8px}
 #qr{background:#fff;padding:8px;border-radius:10px;width:132px;height:132px}
 #qr img,#qr canvas{width:116px!important;height:116px!important}
@@ -176,7 +177,7 @@ body.ctl #ctl{display:block}
 <div class="overlay" id="startOv">
   <div class="card">
     <h1>Das Haus auf dem Hügel</h1>
-    <p>Ein verlassenes Haus, ein seltsames Testament und eine Nacht voller Geister. Etwa 20 Minuten, gesteuert mit den Pedalen und dem Handy.</p>
+    <p>Ein verlassenes Haus, ein seltsames Testament und eine Nacht voller Geister. Etwa 30 Minuten, gesteuert mit den Pedalen und dem Handy.</p>
     <div class="row"><label class="small">Name der Person im Haus:</label><input type="text" id="pname" value="Philipp Beckington" style="width:240px"></div>
     <div class="row"><button id="bTrainer">Trainer verbinden</button><span class="small" id="trState">Ohne Trainer: Watt selbst eingeben (Simulation).</span></div>
     <div class="row"><button id="bHR">Pulsgurt verbinden</button><span class="small" id="hrState">optional</span></div>
@@ -202,7 +203,7 @@ body.ctl #ctl{display:block}
 </div>
 
 <script>/* Musik & Landesound: Dateien im Ordner musik/ neben dieser HTML-Datei */
-const AUDIO={push:"musik/push.ogg",forest:"musik/forest.ogg",ghost:"musik/ghost.ogg",dungeon:"musik/dungeon.ogg",bar:"musik/bar.ogg",land:"musik/land.ogg"};</script>
+const AUDIO={push:"musik/push.ogg",forest:"musik/forest.ogg",ghost:"musik/ghost.ogg",dungeon:"musik/dungeon.ogg",bar:"musik/bar.ogg",land:"musik/land.ogg",happy:"musik/happy.mp3"};</script>
 <script>
 /* ============ EINSTELLUNGEN ============ */
 // Intervalle: f = Vielfaches der Basis-Watt, s = Sekunden
@@ -224,6 +225,7 @@ const LOAD = {
 };
 const FAST_MAX = 1.4;
 const GIFT = { title:'Gutschein', text:'für Dampfnudeln und Gulasch' };
+const DAMPFNUDEL_KCAL = 400;   // eine Dampfnudel mit Vanillesoße – für den Abspann
 const CALIB_SECS = 180, JUMP = 36, COOL_SECS = 120;
 const MUSIC_VOL = 0.5, FADE_S = 1.5;   // Lautstärke der Musik (0–1), Ein-/Ausblenden in Sekunden
 
@@ -280,6 +282,9 @@ const W=f=>Math.round(st.base*f);
 const N=()=>esc(st.name);
 const SUR=()=>esc(String(st.name).trim().split(/\s+/).pop());
 let SPEED=1;
+const SEEN=new Set();
+const EGGS=[['✉️ Dear-John-Brief',()=>F.brief],['🧣 Roter Schal',()=>F.schal],['📿 Freundschaftsarmband',()=>F.armband],['📓 Folklore',()=>SEEN.has('arbeit:folklore')],
+  ['📙 Evermore',()=>SEEN.has('arbeit:evermore')],['🕰 Standuhr',()=>SEEN.has('halle:uhr')],['🎩 Vogelscheuche',()=>SEEN.has('garten:vogelscheuche')],['🛏 Schlafzimmer',()=>SEEN.has('flur:schlafzimmer')]];
 const power=()=> live.src==='ble'? live.p : sim.w;
 const pedaling=()=> st.pS>=30 || (live.c!=null && live.c>=35);
 
@@ -350,7 +355,8 @@ function picQueen(){ return `<rect width="100" height="140" fill="#3a2a5a"/><pat
 <g transform="translate(50 58) scale(.7)">${queenHead()}<path d="M-20 -32 L-16 -54 L-8 -40 L0 -58 L8 -40 L16 -54 L20 -32Z" fill="#f3cf6b" stroke="#a87a1a" stroke-width="2"/><circle cx="0" cy="-46" r="3" fill="#e0457b"/></g>`; }
 function closeSvg(){ return `<svg viewBox="-80 -80 160 190"><circle cx="0" cy="0" r="80" fill="#f3cf6b" opacity=".12"/>
 <path d="M-70 110 q8 -50 44 -64 q26 -6 52 0 q36 14 44 64z" fill="${SKIN}"/><path d="M-14 66 q14 6 28 0" stroke="#c99a76" stroke-width="2" fill="none"/>
-<g transform="scale(1.35)">${beckHead()}</g></svg>`; }
+<g transform="scale(1.35)">${beckHead()}</g>
+${F.schalMit?`<g fill="#c0283a" stroke="#7a1420" stroke-width="1.5"><path d="M12 60 l9 38 l-13 3 l-6 -38z"/><path d="M-33 52 q33 15 66 0 l1 12 q-34 16 -68 0z"/></g>`:''}</svg>`; }
 function village(k){const w=[0,0,.2,.5,.85,1][k];let s='';[[0,22,'#b86a5a'],[30,18,'#9a7aa8'],[56,26,'#c49a5a'],[90,16,'#7a8fa6']].forEach(([x,h,c])=>{s+=`<rect x="${x}" y="${-h}" width="24" height="${h}" fill="${c}"/><path d="M${x-3} ${-h} L${x+12} ${-h-14} L${x+27} ${-h}Z" fill="#5a3a3a"/><rect x="${x+8}" y="${-h+6}" width="7" height="7" fill="#ffd36b" opacity="${w}"/>`});return s;}
 function farHouse(k){const HL=['#6c9450','#5e8447','#596b40','#424c37','#283229','#141b24'][k],lit=k>=3?'#f3cf6b':'#4a4458',op=k>=3?.4+k*.12:1;
 return `<ellipse cx="0" cy="6" rx="95" ry="22" fill="${HL}"/>
@@ -603,7 +609,7 @@ function applyState(){
     show('fire',F.feuer); const k=$('kaminG'); if(k) k.style.opacity= F.feuer? 1 : .62;
     const fl=$('flames'); if(fl) fl.setAttribute('transform', F.hell? 'translate(410 465) scale(1.25) translate(-410 -465)':'translate(410 465) scale(.6) translate(-410 -465)');
     const g=$('fireGlowC'); if(g) g.setAttribute('r', F.hell?220:90); }
-  if(st.scene==='halle') show('schal',F.schal);
+  if(st.scene==='halle') show('schal',F.schal&&!F.schalMit);
   if(st.scene==='arbeit') show('safeOpen',F.testament);
   if(st.scene==='baum'){ show('apple',!F.apfel); show('baumGeister',F.geister); }
   if(st.scene==='garten'){ show('benchApple',F.apfelGelegt); show('gruftSpalt',F.spalt&&!F.gruftOffen); show('gruftDoor',!F.gruftOffen); show('beckFall',F.gruftOffen); }
@@ -698,6 +704,7 @@ function enterHalle(){ enterScene('halle');
 function examine(id){
   sfx('pop');
   if(st.scene==='halle' && !F.hell && !['kamin','haustuer'].includes(id)) return say('🌑 Zu dunkel','Du siehst zu wenig. Erst mal Licht machen!',explore);
+  SEEN.add(st.scene+':'+id);
   switch(st.scene+':'+id){
   /* Vorgarten */
   case 'vorgarten:tor':
@@ -712,10 +719,11 @@ function examine(id){
   case 'vorgarten:tuer':
     if(F.tuerAuf) return enterHalle();
     if(!F.schluessel) return say('🚪 Haustür',['Verschlossen. Die aufzubrechen wäre ganz schön anstrengend …','Willst du nicht erst mal nach einem Schlüssel schauen?'],explore);
-    return say('🚪 Haustür','Du steckst den Schlüssel ins Schloss … er passt nicht! Na toll.',()=>startChoice('Und jetzt?',['🏠 Heimgehen','💥 Tür aufbrechen'],[
-      ()=>say('🏠 Heimweg','Du drehst um und gehst nach Hause. Vielleicht ein andermal …',()=>location.reload()),
+    const tuerWahl=()=>startChoice('Und jetzt?',['🏠 Heimgehen','💥 Tür aufbrechen'],[
+      ()=>say('🏠 Heimweg',['Du drehst dich schon zum Gehen um …','… ach was! So schnell gibst du nicht auf. Den ganzen Hügel hochfahren und dann umdrehen? Niemals!'],tuerWahl),
       ()=>hold('tuer','💥 Tür aufbrechen','Wirf dich immer wieder dagegen – eine Minute lang!',()=>{ F.tuerAuf=true; sfx('door'); buzz(); flash('KRACH!');
-        say('🚪 Haustür','KRACH! Die Tür gibt nach und knallt nach innen auf.',enterHalle); }) ]));
+        say('🚪 Haustür','KRACH! Die Tür gibt nach und knallt nach innen auf.',enterHalle); }) ]);
+    return say('🚪 Haustür','Du steckst den Schlüssel ins Schloss … er passt nicht! Na toll.',tuerWahl);
   case 'vorgarten:garten':
     if(!F.garten) return say('🌲 Garten','Hinter dem Haus ist es stockdunkel. Was willst du da?',explore);
     enterScene('garten');
@@ -734,8 +742,10 @@ function examine(id){
         ()=>hold('pauseKamin','☕ Kurz aufwärmen','Das Feuer kommt langsam in Gang. Ganz locker weitertreten.',balg)); }));
     if(F.feuer) return F.platten? balg() : platten();
     return say('🔥 Kamin',['Im Kamin liegt etwas Holz. Daneben: Zündhölzer und ein alter Blasebalg.','Mal sehen, ob das noch brennt …'],()=>hold('feuer','🔥 Feuer entzünden','30 Sekunden kräftig, bis die Flamme richtig greift!',()=>{ F.feuer=true; applyState(); sfx('whoosh'); platten(); }));
-  case 'halle:schrank': return say('🚪 Schrank','Alte Mäntel, ein Zylinder und eine Kiste mit Kerzenstummeln. Es riecht nach Mottenkugeln.',()=>{ F.schal=true; applyState();
-    say('🚪 Schrank','Zwischen den Mänteln hängt ein roter Schal. Den hat wohl jemand vor langer Zeit hier vergessen …',explore); });
+  case 'halle:schrank':
+    if(F.schalMit) return say('🚪 Schrank','Alte Mäntel, ein Zylinder und eine Kiste mit Kerzenstummeln. Es riecht nach Mottenkugeln.',explore);
+    return say('🚪 Schrank','Alte Mäntel, ein Zylinder und eine Kiste mit Kerzenstummeln. Es riecht nach Mottenkugeln.',()=>{ F.schal=true; applyState();
+    say('🚪 Schrank',['Zwischen den Mänteln hängt ein roter Schal. Den hat wohl jemand vor langer Zeit hier vergessen …','Du nimmst ihn mit. Wer weiß, wofür der noch gut ist.'],()=>{ F.schalMit=true; applyState(); note('Roter Schal aus dem Schrank'); explore(); }); });
   case 'halle:uhr': return say('🕰 Standuhr',['Die Standuhr ist um Mitternacht stehen geblieben …','Plötzlich schlägt sie – dreizehn Mal.'],explore);
   case 'halle:treppe': return goStairs('up');
   /* Treppe */
@@ -761,9 +771,9 @@ function examine(id){
   case 'arbeit:evermore': return say('📙 Evermore',[`<i>„Evermore – Vom ewigen Leben“</i>. Ein braunes, schweres Buch, gleich neben dem grauen. Am Rand stehen überall Notizen in krakeliger Handschrift, offenbar von ${N()} selbst.`,'Ein Satz ist dreimal unterstrichen: <i>„Der Tod ist nur ein langer Schlaf – für den, der die richtige Königin findet.“</i>'],explore);
   case 'arbeit:papierkorb':
     if(F.zettel) return say('🗑 Papierkorb','Nur noch Müll und ein Apfelgrutzen.',explore);
-    if(!F.raetsel) return say('🗑 Papierkorb','Nur Müll: zerknülltes Papier, Staub und ein alter Apfelgrutzen.',explore);
+    if(!F.raetsel){ F.korbSeen=true; return say('🗑 Papierkorb','Nur Müll: zerknülltes Papier, Staub und ein alter Apfelgrutzen.',explore); }
     F.zettel=true; note('Zettel im Papierkorb: „Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“'); secret('📝 Zettel aus dem Papierkorb:<br><b>„Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“</b>'); buzz();
-    return say('🗑 Papierkorb',['Huch – da hast du vorhin wohl nicht genau hingeschaut! Ganz unten im Papierkorb liegt noch ein Zettel.','Darauf steht: <i>„Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“</i>'],explore);
+    return say('🗑 Papierkorb',[F.korbSeen? 'Huch – da hast du vorhin wohl nicht genau hingeschaut! Ganz unten im Papierkorb liegt noch ein Zettel.' : 'Zerknülltes Papier, Staub, ein alter Apfelgrutzen … und ganz unten ein Zettel.','Darauf steht: <i>„Für alle mit Glückszahl 13: Der Code steht auf Album Nr. 5.“</i>'],explore);
   case 'arbeit:safe':
     if(F.testament) return say('🔓 Safe','Der Safe ist offen und leer.',explore);
     return say('🔒 Safe','Ein schwerer Safe mit Zahlenschloss. Vier Ziffern.',()=>{ const tryCode=()=>startLock([1,9,8,9],ok=>{
@@ -859,7 +869,7 @@ function finale(){ F.apfelGelegt=true; applyState(); sfx('pop');
     say('🪦 Gruft','Der Boden beginnt zu ruckeln … die ganze Gruft wackelt!',()=>{ g&&g.classList.remove('wobble'); F.spalt=true; applyState();
       say('🪦 Gruft',['Die Gruft ist schon einen Spalt breit offen!','Noch ein bisschen Kraft, dann kannst du sie öffnen.'],()=>hold('gruft','💪 Gruft aufstemmen','Stemm dich dagegen – je kräftiger, desto schneller geht es!',()=>{
         F.gruftOffen=true; applyState(); sfx('door'); buzz(); flash('RUMMS!'); setTimeout(()=>sfx('land'),1300);
-        say('🪦 Gruft',['Die schwere Tür schwingt auf …',`… und heraus purzelt ${N()}! Nur in Unterhose.`],showClose); })); }); }); }
+        say('🪦 Gruft',['Die schwere Tür schwingt auf …',`… und heraus purzelt ${N()}! Nur in Unterhose.`,...(F.schalMit?['Er bibbert vor Kälte. Gut, dass du den roten Schal aus dem Schrank dabeihast – du legst ihn ihm um den Hals.','„Den kenne ich doch … an den erinnere ich mich <i>all too well</i>.“']:[])],showClose); })); }); }); }
 let closeT=0, giftOpen=false, giftT=0; const CLOSE_MIN=16;
 const BUBBLE=()=>`<p style="margin:0 0 12px">„Du hast mich gerettet! Hab tausend Dank, edle Retterin!</p><p style="margin:0 0 12px">Um meine Dankbarkeit auszudrücken, werde ich dir ein Mahl kredenzen – ein unvergessliches Erlebnis, wahrlich einer Königin würdig!</p><p style="margin:0">Nimm dies als Zeichen meiner Dankbarkeit …“</p>`;
 function showClose(){ st.mode='close'; closeT=0; $('closeFace').innerHTML=closeSvg(); $('bubbleText').innerHTML=BUBBLE(); $('close').style.display='flex'; sfx('win'); legend(); pushUI(); }
@@ -905,12 +915,19 @@ function heimTick(dt){ const p=Math.min(1,st.coolT/COOL_SECS), v=$('heimVillage'
   const lb=$('legB'), lf=$('legF'); lb&&lb.setAttribute('points',leg(crankA+Math.PI)); lf&&lf.setAttribute("points",leg(crankA)); }
 function cooldown(){ $('nails').style.display='none'; enterScene('heim'); heimTick(0); st.mode='cool'; st.coolT=0; $('boxTitle').textContent='🌙 Ausrollen'; $('boxText').innerHTML=`Ihr radelt gemeinsam zurück ins Dorf – ${N()} hinten auf dem Gepäckträger. Ganz locker weitertreten.`;
   $('boxUi').innerHTML=`<div class="bar"><i id="cb"></i></div><div class="barlbl"><span>ganz locker</span><span id="cl"></span></div>`; legend(); pushUI(); }
+function dampfnudeln(kcal){ const q=Math.round(kcal/DAMPFNUDEL_KCAL*4), g=Math.floor(q/4), r=['','¼','½','¾'][q%4];
+  if(!q) return 'nicht mal einen Bissen Dampfnudel';
+  return (g? g+(r?' '+r:'') : r)+(q>4?' Dampfnudeln':' Dampfnudel'); }
 function finishGame(){ st.mode='end'; st.running=false; const avg=st.t? st.wSum/st.t:0, hr=st.hrT? st.hrSum/st.hrT:0;
+  const kcal=Math.round(st.wSum/1000), found=EGGS.filter(e=>e[1]());
   fireworks(6000); sfx('fanfare');
   $('endCard').innerHTML=`<h1>Geschafft! 🍎</h1><p>${N()} lebt wieder – und der Gutschein für Dampfnudeln und Gulasch gehört dir.</p>
   <p style="font-size:18px">⏱ ${fmtT(st.t)} · Ø ${Math.round(avg)} W · max ${Math.round(st.wMax)} W${hr?` · Ø ${Math.round(hr)} bpm`:''}<br><span class="small">Basis: ${st.base} W</span></p>
+  <p style="font-size:18px">🔥 Verbrannt: ≈ ${kcal} kcal – das reicht für <b>${dampfnudeln(kcal)}</b>. Der Gutschein ist also redlich verdient!</p>
+  <p style="font-size:18px;margin-bottom:6px">🔎 Easter Eggs entdeckt: <b>${found.length} von ${EGGS.length}</b></p>
+  <div class="eggs">${EGGS.map(e=>e[1]()?`<span>${e[0]}</span>`:'<span class="no">???</span>').join('')}</div>
   <div class="row"><button class="go" onclick="location.reload()">Nochmal spielen</button></div>
-  <p class="small" style="margin-top:16px">Musik (via OpenGameArt.org): „Pushing Ahead“ – Centurion_of_war · „Creepy Forest“ – Augmentality (Brandon Morris) · „WTF Ghost“ – Alexandr Zhelanov (CC-BY 3.0) · „Dungeon 04“ – Beau Buckley (CC-BY-SA 4.0) · „Bar Jazz Piano Song (Fingersnap)“ – VViard (CC-BY 4.0)</p>`; $('endOv').style.display='flex'; }
+  <p class="small" style="margin-top:16px">Musik (via OpenGameArt.org): „Pushing Ahead“ – Centurion_of_war · „Creepy Forest“ – Augmentality (Brandon Morris) · „WTF Ghost“ – Alexandr Zhelanov (CC-BY 3.0) · „Dungeon 04“ – Beau Buckley (CC-BY-SA 4.0) · „Bar Jazz Piano Song (Fingersnap)“ – VViard (CC-BY 4.0) · „happy tune“ – syncopika (CC-BY 3.0)</p>`; $('endOv').style.display='flex'; }
 
 /* ---------- Hauptschleife ---------- */
 let last=0, uiT=0;
@@ -1106,14 +1123,14 @@ function sfx(k){ ({blip:()=>tone(880,.05,'sine',.03), pop:()=>tone(620,.08,'tria
 
 /* ---------- Musik ---------- */
 // Weg: Pushing Ahead · Vorgarten/Haus/Garten/Apfelbaum: Creepy Forest · Wiese & Rückweg: WTF Ghost
-// Gruft nach dem Apfelbaum: Dungeon 04 (endet, wenn die Gruft aufgeht) · danach & Heimfahrt: still
+// Gruft nach dem Apfelbaum: Dungeon 04 (endet, wenn die Gruft aufgeht) · danach still · Heimfahrt: happy tune
 const TRACKS={}; let curMusic=null;
 function track(k){ if(!TRACKS[k]){ const a=new Audio(AUDIO[k]); a.loop=true; a.volume=0; a.preload='auto'; TRACKS[k]=a; } return TRACKS[k]; }
 function musicFor(){ if(!st.running) return null; const s=st.scene;
   if(s==='cafe') return st.introDone? 'bar' : null;   // Vorspann still, Café: Bar-Jazz
   if(s==='weg') return 'push';
   if(s==='pfad'||s==='rueckweg') return 'ghost';
-  if(s==='heim') return null;
+  if(s==='heim') return 'happy';
   if(s==='garten'&&F.apfel) return F.gruftOffen? null : 'dungeon';
   return 'forest'; }
 function updateMusic(){ const k=musicFor(); if(k===curMusic) return; curMusic=k; if(k){ const a=track(k); if(a.paused) a.play().catch(()=>{}); } }
